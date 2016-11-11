@@ -1,0 +1,99 @@
+{% extends "header.html" %}
+
+{% block content %}
+<style>
+    .sizeTB {
+        width: 500px;
+        height: 300px;
+        padding: 1px;
+        resize: both;
+    }
+    .btnCat {
+        background-color: transparent; /* Green */
+        border: #00BFFF;
+        color: #00BFFF;
+        padding: 15px 32px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 16px;
+    }
+</style>
+
+
+<footer id="footer" style="margin-top: -50px;">
+    <div class="container">
+
+    </div>
+</footer>
+
+<section id="service" >
+<div class="container">
+    <div class="row">
+        <div class="col-md-12" >
+            <!--
+            <form action="post">
+                <input type="text" class="form-control sizeTB"  name="fname" placeholder="Complaint">
+            </form>
+            -->
+			
+            <div class="sec-title text-center wow animated fadeInDown">
+                <h2>CATEGORIZE COMPLAINT</h2>
+                <p style="padding-bottom: 15px;border-bottom:1px solid #a8a8a8;">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+            </div>
+
+			<!--
+            <p style="font-size: 24px;">Complaint:</p>
+            <p style="font-size: 24px; margin: 10px 0px; ">
+                Ang kalsada dito sa Manila ay nasira kahapon at di na madaanan.
+            </p>
+
+
+
+            <p style="margin-top: 40px; font-size: 24px;">The complaint is categorized as:</p>
+            <p style="font-size: 24px; margin: 10px 0px; padding-bottom: 15px;" >
+                Road
+            </p><form>
+			
+			<p style="margin-top: 0px; font-size: 24px;">Sub-category</p>
+            <p style="font-size: 24px; margin: 10px 0px; padding-bottom: 15px;border-bottom:1px solid #a8a8a8;" >
+                Damaged road
+            </p><form>
+			
+            <p style="margin-top: 0px; font-size: 24px;">Execution Time: 5 seconds</p>
+			
+            <p style="margin-bottom: 20px; font-size: 24px;">Memory used: 500kb</p>
+			-->
+			<table style="width:100%; border-bottom:1px solid #a8a8a8;">
+        <col style="width:50%">
+        <thead>
+				  <tr>
+					<th>Complaint</th>
+					<th>Category</th> 
+					<th>Sub-category</th>
+					<th>Date</th>
+					<th>Execution Time</th>
+					<th>Memory used</th>
+				  </tr>
+        </thead>
+        <tbody>
+				  <tr>
+					<td>Ang kalsada dito sa Manila ay nasira kahapon at di na madaanan.Ang kalsada dito sa Manila ay nasira kahapon at di na madaanan.Ang kalsada dito sa Manila ay nasira kahapon at di na madaanan.Ang kalsada dito sa Manila ay nasira kahapon at di na madaanan.</td>
+					<td>Road</td> 
+					<td>Damaged</td>
+					<td>9/12/2016</td>
+					<td>5 secs</td>
+					<td>500 kb</td>
+				  </tr>
+        </tbody>
+			</table>
+			
+<input type="button" style="margin-top: 20px;" value="Click to download excel file" onClick="window.location.href='/path/to/excel/file.xls'">
+</form> <br/>
+            <a href="/complaints/" style="margin-top: 15px;" class="btn btn-blue btn-effect">View Complaints</a>
+        </div>
+
+    </div>
+</div>
+</section>
+{% endblock %}	

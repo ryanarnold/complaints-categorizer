@@ -1,0 +1,63 @@
+{% extends "header.html" %}
+
+{% block content %}
+<style>
+    .sizeTB {
+        width: 500px;
+        height: 300px;
+        padding: 1px;
+        resize: both;
+    }
+    .btnCat {
+        background-color: transparent; /* Green */
+        border: #00BFFF;
+        color: #00BFFF;
+        padding: 15px 32px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 16px;
+    }
+</style>
+
+
+<footer id="footer" style="margin-top: -50px;">
+    <div class="container">
+
+    </div>
+</footer>
+
+<section id="service" >
+<div class="container">
+    <div class="row">
+        <div class="col-md-12" >
+            <!--
+            <form action="post">
+                <input type="text" class="form-control sizeTB"  name="fname" placeholder="Complaint">
+            </form>
+            -->
+
+            <div class="sec-title text-center wow animated fadeInDown">
+                <h2>Admin Page</h2>
+            </div>
+			<center>
+			
+            <form action="#">
+            <input type="submit" style="margin: 20px 0px; width: 50%" id="submit" class="btn btn-blue btn-effect" value="Upload training set's excel file"/>
+            </form>
+            <form action="#">
+            <input type="submit" style="width: 50%" id="submit" class="btn btn-blue btn-effect" value="View entire process"/>
+            </form>
+            <form action="#">
+            <input type="submit" style="margin: 20px 0px; width: 50%" id="submit" class="btn btn-blue btn-effect" value="View important stats"/>
+            </form>
+            <form action="#">
+            <input type="submit" style="width: 50%" id="submit" class="btn btn-blue btn-effect" value="View experiment papers"/>
+            </form>
+			</center>
+        </div>
+
+    </div>
+</div>
+</section>
+{% endblock %}	

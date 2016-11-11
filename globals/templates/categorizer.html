@@ -1,0 +1,62 @@
+{% extends "header.html" %}
+
+{% block content %}
+<style>
+    .sizeTB {
+        width: 500px;
+        height: 300px;
+        padding: 1px;
+        resize: both;
+    }
+    .btnCat {
+        background-color: transparent; /* Green */
+        border: #00BFFF;
+        color: #00BFFF;
+        padding: 15px 32px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 16px;
+    }
+</style>
+
+
+<footer id="footer" style="margin-top: -50px;">
+    <div class="container">
+
+    </div>
+</footer>
+
+<section id="service" >
+<div class="container">
+    <div class="row">
+        <div class="col-md-12" >
+            <!--
+            <form action="post">
+                <input type="text" class="form-control sizeTB"  name="fname" placeholder="Complaint">
+            </form>
+            -->
+
+            <div class="sec-title text-center wow animated fadeInDown">
+                <h2>CATEGORIZER</h2>
+                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. 
+				Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua
+				Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua
+				Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua</p>
+            </div>
+
+
+            <div class="input-field">
+                <textarea rows="15" cols="150" name="message" class="form-control" placeholder="Complaint..."></textarea>
+            </div>
+			<input id="fileSelect" style="margin-bottom: 20px" type="file" accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" />  
+
+            <form action="/categorized/">
+            <input type="submit" id="submit" class="btn btn-blue btn-effect" value="SUBMIT"/>
+            </form>
+        </div>
+
+    </div>
+</div>
+</section>
+{% endblock %}	
