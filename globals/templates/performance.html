@@ -1,0 +1,31 @@
+{% extends "header.html" %}
+
+{% block content %}
+
+        <div id="page-wrapper" >
+            <div id="page-inner">
+                <div class="row">
+                    <div class="col-md-12">
+                     <h2>Performance using Proposed Method</h2>   
+                        <h5>This page will output the precision, recall, F-measure and accuracy
+						of the categorizer using the proposed method of Naive Bayes and k-Nearest
+						Neighbor algorithm. This will use the data provided in the "Data to be used"
+						page. It will partition that data into two: the training set and the test set.
+						</h5>
+						
+
+            <form action="#">
+            <input type="submit" id="submit" class="btn btn-blue btn-effect" value="Begin Training"/>
+			</form>
+                    </div>
+                </div>              
+                 <!-- /. ROW  -->
+                  <hr />
+                <hr />                   
+    </div>
+             <!-- /. PAGE INNER  -->
+            </div>
+         <!-- /. PAGE WRAPPER  -->
+
+
+{% endblock %}

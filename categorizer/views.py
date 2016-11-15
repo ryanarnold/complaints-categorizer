@@ -20,3 +20,6 @@ def adminpage(request):
     
 def data(request):
     return render(request, 'data.html')
+    
+def performance(request):
+    return render(request, 'performance.html')
