@@ -1,0 +1,29 @@
+{% extends "header.html" %}
+
+{% block content %}
+
+        <div id="page-wrapper" >
+            <div id="page-inner">
+                <div class="row">
+                    <div class="col-md-12">
+                     <h2>Data to be Used</h2>   
+                        <h5>Upload an excel file containing the complaints which will be used
+						for the training and testing of the categorizer:
+						</h5>
+						
+			<input id="fileSelect" style="margin-bottom: 20px" type="file" accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" />  
+
+            <form action="#">
+            <input type="submit" id="submit" class="btn btn-blue btn-effect" value="SUBMIT"/>
+                    </div>
+                </div>              
+                 <!-- /. ROW  -->
+                  <hr />
+                <hr />                   
+    </div>
+             <!-- /. PAGE INNER  -->
+            </div>
+         <!-- /. PAGE WRAPPER  -->
+
+
+{% endblock %}

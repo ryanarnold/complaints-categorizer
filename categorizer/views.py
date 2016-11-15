@@ -17,3 +17,6 @@ def complaints(request):
     
 def adminpage(request):
     return render(request, 'adminpage.html')
+    
+def data(request):
+    return render(request, 'data.html')

@@ -24,4 +24,5 @@ urlpatterns = [
     url(r'^categorized/$', views.categorized, name='categorized'),
     url(r'^complaints/$', views.complaints, name='complaints'),
     url(r'^adminpage/$', views.adminpage, name='adminpage'),
+    url(r'^data/$', views.data, name='data'),
 ]
