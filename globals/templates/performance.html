@@ -13,14 +13,19 @@
 						page. It will partition that data into two: the training set and the test set.
 						</h5>
 						
+                        <form method="post">
+                            <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+                            <input type="submit" name="submit" value="Begin Training" class="btn btn-md btn-default">
+                        </form>
 
-            <a href="/train/" class="btn btn-md btn-default" role="button">Begin Training</a>
+                        <h3>Accuracy: {{ accuracy }}</h3>
+
                     </div>
                 </div>              
-                 <!-- /. ROW  -->
-                  <hr />
-                <hr />                   
-    </div>
+                         <!-- /. ROW  -->
+                          <hr />
+                        <hr />                   
+            </div>
              <!-- /. PAGE INNER  -->
             </div>
          <!-- /. PAGE WRAPPER  -->

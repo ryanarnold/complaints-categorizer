@@ -1,6 +1,8 @@
 from django.shortcuts import render
 from django.http import HttpResponseRedirect
 from django.core.urlresolvers import reverse
+from categorizer.preprocess import *
+import csv
 
 def index(request):
     return HttpResponseRedirect(reverse('home'))
@@ -24,4 +26,23 @@ def data(request):
     return render(request, 'data.html')
     
 def performance(request):
-    return render(request, 'performance.html')
+    context = {'accuracy': 0.0}
+
+    if request.method == 'POST':
+        complaints = []
+        with open('globals/data/raw.csv', 'r') as file:
+            reader = csv.reader(file)
+            for row in reader:
+                complaints.append({'id': row[0], 'body': row[1], 'category': row[3]})
+
+        print('Preprocessing complaints...')
+        preprocessed_complaints = preprocess(complaints)
+        print('Extracting features...')
+        features = extract_features(preprocessed_complaints)
+        print('Vectorizing...')
+        vectorize(preprocessed_complaints, features)
+
+        # PUT CLASSIFIER HERE
+
+
+    return render(request, 'performance.html', context)

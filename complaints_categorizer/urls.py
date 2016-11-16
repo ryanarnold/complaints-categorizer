@@ -25,5 +25,5 @@ urlpatterns = [
     url(r'^complaints/$', views.complaints, name='complaints'),
     url(r'^adminpage/$', views.adminpage, name='adminpage'),
     url(r'^data/$', views.data, name='data'),
-    url(r'^performance/$', views.performance, name='performance'),
+    url(r'^performance/$', views.performance, name='performance')
 ]
