@@ -3,6 +3,9 @@ from django.http import HttpResponseRedirect
 from django.core.urlresolvers import reverse
 from categorizer.preprocess import *
 import csv
+import numpy as np
+from sklearn import preprocessing, cross_validation, neighbors
+import pandas as pd
 
 def index(request):
     return HttpResponseRedirect(reverse('home'))
@@ -43,6 +46,17 @@ def performance(request):
         vectorize(preprocessed_complaints, features)
 
         # PUT CLASSIFIER HERE
+        df = pd.read_csv('globals/data/vectorized.csv')
+
+        X = np.array(df.drop(['category'],1))
+        y = np.array(df['category'])
+
+        X_train, X_test, y_train, y_test = cross_validation.train_test_split(X,y,test_size=0.2)
+
+        clf = neighbors.KNeighborsClassifier()
+        clf.fit(X_train, y_train)
+
+        context['accuracy'] = clf.score(X_test, y_test)
 
 
     return render(request, 'performance.html', context)
