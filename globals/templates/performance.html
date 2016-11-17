@@ -143,30 +143,18 @@
     <th>Actual Category</th>
     <th>Correct?</th>
   </tr>
-  <tr>
-    <td>.</td>
-    <td></td>
-    <td></td>
-    <td></td>
+  {% for preds in prediction %}
+	{% if preds['correct'] == 'Yes' %}
+		<tr style="color: #00af00;">
+	{% else %}
+		<tr style="color: red;">
+	{% endif %}
+    <td>{{ preds['id'] }}</td>
+    <td>{{ preds['system_category'] }}</td>
+    <td>{{ preds['actual_category'] }}</td>
+    <td>{{ preds['correct'] }}</td>
   </tr>
-  <tr>
-    <td>.</td>
-    <td></td>
-    <td></td>
-    <td></td>
-  </tr>
-  <tr>
-    <td>.</td>
-    <td></td>
-    <td></td>
-    <td></td>
-  </tr>
-  <tr>
-    <td>.</td>
-    <td></td>
-    <td></td>
-    <td></td>
-  </tr>
+  {% endfor %}
 </table>
                     </div>
                 </div>              
