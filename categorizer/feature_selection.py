@@ -22,13 +22,14 @@ def chi_square(vocab, complaints):
 	features = []
 	chi_table = dict()
 	categories = [
-		'newsinfo',
-		'globalnation',
-		'opinion',
-		'technology',
-		'entertainment',
-		'business',
-		'sports',
+		# 'newsinfo',
+		# 'globalnation',
+		# 'opinion',
+		# 'technology',
+		# 'entertainment',
+		# 'business',
+		# 'sports',
+		'1', '4', '5', '6'
 	]
 	N = len(complaints)
 	
@@ -59,5 +60,5 @@ def chi_square(vocab, complaints):
 			features.append(term)
 			print(term)
 
-
+	print('Extracted {0} features'.format(len(features)))
 	return features

@@ -26,10 +26,10 @@ def extract_features(complaints):
 		text += complaint['body']
 	vocab = set(text)
 	initial_features = DF(vocab, complaints)	# eliminates too infrequent terms
-	# print('Extracting useful features...')
-	# informative_features = chi_square(initial_features, complaints)
+	print('Extracting useful features...')
+	informative_features = chi_square(initial_features, complaints)
 
-	return initial_features
+	return informative_features
 
 def vectorize(complaints, features):
 	file = open(VECTORIZED_CSV_PATH, 'w')
@@ -41,7 +41,6 @@ def vectorize(complaints, features):
 		'entertainment': 5,
 		'business': 6,
 		'sports': 7,
-
 	}
 
 	for term in features:
