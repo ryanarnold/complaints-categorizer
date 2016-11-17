@@ -38,6 +38,8 @@ def performance(request):
             for row in reader:
                 complaints.append({'id': row[0], 'body': row[1], 'category': row[3]})
 
+        # Preprocessing:
+
         print('Preprocessing complaints...')
         preprocessed_complaints = preprocess(complaints)
         print('Extracting features...')
@@ -45,7 +47,8 @@ def performance(request):
         print('Vectorizing...')
         vectorize(preprocessed_complaints, features)
 
-        # PUT CLASSIFIER HERE
+        # Classification:
+        print('Training...')
         df = pd.read_csv('globals/data/vectorized.csv')
 
         X = np.array(df.drop(['category'],1))
@@ -56,7 +59,7 @@ def performance(request):
         clf = neighbors.KNeighborsClassifier()
         clf.fit(X_train, y_train)
 
-        context['accuracy'] = clf.score(X_test, y_test)
+        context['accuracy'] = '{0:.4f}'.format(clf.score(X_test, y_test) * 100)
 
 
     return render(request, 'performance.html', context)
