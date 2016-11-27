@@ -59,9 +59,9 @@ def vectorize(complaints, features):
 
 	return vectorized_complaints
 
-def nb_vectorize(complaints, features):
+def nb_vectorize(train_set, test_set, features):
 	entire_text = []
-	for complaint in complaints:
+	for complaint in train_set:
 		for token in complaint['body']:
 			entire_text.append(token)
 
@@ -70,14 +70,14 @@ def nb_vectorize(complaints, features):
 	category_text = {}
 	for category in categories:
 		category_text[category] = []
-		for c in complaints:
+		for c in train_set:
 			if c['category'] == category:
 				for token in c['body']:
 					category_text[category].append(token)
 
-	vectorized_complaints = list()
+	vectorized_train_set = list()
 
-	for complaint in complaints:
+	for complaint in train_set:
 		print('Vectorizing ' + complaint['id'])
 		vector = {}
 
@@ -93,9 +93,30 @@ def nb_vectorize(complaints, features):
 			n = len(complaint['body'])
 			vector[category] = prob / n
 
-		vectorized_complaints.append({'vector': vector, 'category': complaint['category'], 'id': complaint['id']})
+		vectorized_train_set.append({'vector': vector, 'category': complaint['category'], 'id': complaint['id']})
 
-	return vectorized_complaints
+	vectorized_test_set = list()
+
+	for complaint in test_set:
+		print('Vectorizing ' + complaint['id'])
+		vector = {}
+
+		for category in categories:
+			prob = float()			
+
+			for word in complaint['body']:
+				A = category_text[category].count(word) / len(category_text[category])
+				B = len(category_text[category]) / len(entire_text)
+				C = entire_text.count(word) / len(entire_text)
+				if C > 0:
+					prob += (A * B) / C
+
+			n = len(complaint['body'])
+			vector[category] = prob / n
+
+		vectorized_test_set.append({'vector': vector, 'category': complaint['category'], 'id': complaint['id']})
+
+	return vectorized_train_set, vectorized_test_set
 
 def train(complaints):
 	shuffle(complaints)

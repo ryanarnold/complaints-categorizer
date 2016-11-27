@@ -8,6 +8,9 @@ from sklearn import preprocessing, cross_validation, neighbors
 import pandas as pd
 import time
 import json
+from random import shuffle
+from nltk.classify import accuracy
+from nltk import word_tokenize, PorterStemmer, FreqDist, NaiveBayesClassifier
 
 def index(request):
     return HttpResponseRedirect(reverse('home'))
@@ -56,32 +59,62 @@ def performance(request):
             features = json.load(features_file)
         print('Finished after {0:.4f} seconds.'.format(time.time() - start))
 
+        # Partition into training set and test set
+        shuffle(preprocessed_complaints)
+        half_point = int(len(complaints) * 0.8)
+        train_set = preprocessed_complaints[:half_point]
+        test_set = preprocessed_complaints[half_point:]
+
         # Vectorization:
         start = time.time()
         print('Vectorizing...')
         # vectorize(preprocessed_complaints, features)
-        # vectorized_complaints = nb_vectorize(preprocessed_complaints, features)
+        # vectorized_train_set, vectorized_test_set = nb_vectorize(train_set, test_set, features)
 
-        # with open('globals/data/vectorized.csv', 'w') as file:
-        #     for category in vectorized_complaints[0]['vector'].keys():
-        #         file.write(category + ',')
-        #     file.write('category\n')
-        #     for complaint in vectorized_complaints:
-        #         for category in vectorized_complaints[0]['vector'].keys():
-        #             file.write(str(complaint['vector'][category]) + ',')
-        #         file.write(complaint['category'] + '\n')
+        # with open('globals/data/train.json', 'w') as file:
+        #     json.dump(vectorized_train_set, file)
+        # with open('globals/data/test.json', 'w') as file:
+        #     json.dump(vectorized_test_set, file)
+
+        with open('globals/data/train.json', 'r') as file:
+            vectorized_train_set = json.load(file)
+        with open('globals/data/test.json', 'r') as file:
+            vectorized_test_set = json.load(file)
+
+        with open('globals/data/vectorized_train.csv', 'w') as file:
+            for category in vectorized_train_set[0]['vector'].keys():
+                file.write(category + ',')
+            file.write('category\n')
+            for complaint in vectorized_train_set:
+                for category in vectorized_train_set[0]['vector'].keys():
+                    file.write(str(complaint['vector'][category]) + ',')
+                file.write(complaint['category'] + '\n')
+
+        with open('globals/data/vectorized_test.csv', 'w') as file:
+            for category in vectorized_test_set[0]['vector'].keys():
+                file.write(category + ',')
+            file.write('category\n')
+            for complaint in vectorized_test_set:
+                for category in vectorized_test_set[0]['vector'].keys():
+                    file.write(str(complaint['vector'][category]) + ',')
+                file.write(complaint['category'] + '\n')
 
         print('Finished after {0:.4f} seconds.'.format(time.time() - start))
 
         # Classification:
         start = time.time()
         print('Training...')
-        df = pd.read_csv('globals/data/vectorized.csv')
+        df = pd.read_csv('globals/data/vectorized_train.csv')
 
-        X = np.array(df.drop(['category'],1))
-        y = np.array(df['category'])
+        X_train = np.array(df.drop(['category'],1))
+        y_train = np.array(df['category'])
 
-        X_train, X_test, y_train, y_test = cross_validation.train_test_split(X,y,test_size=0.2)
+        df = pd.read_csv('globals/data/vectorized_test.csv')
+
+        X_test = np.array(df.drop(['category'],1))
+        y_test = np.array(df['category'])
+
+        # X_train, X_test, y_train, y_test = cross_validation.train_test_split(X,y,test_size=0.2)
 
         clf = neighbors.KNeighborsClassifier()
         clf.fit(X_train, y_train)
@@ -89,8 +122,8 @@ def performance(request):
         context['accuracy'] = '{0:.4f}'.format(clf.score(X_test, y_test) * 100)
         print('Finished after {0:.4f} seconds.'.format(time.time() - start))
 
-        predict_list = X.reshape(len(X), -1)
-        category_list = y
+        predict_list = X_test.reshape(len(X_test), -1)
+        category_list = y_test
         predictions_num = clf.predict(predict_list)
         cats = {
             '1': 'HR',
