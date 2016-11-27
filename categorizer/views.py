@@ -7,6 +7,7 @@ import numpy as np
 from sklearn import preprocessing, cross_validation, neighbors
 import pandas as pd
 import time
+import json
 
 def index(request):
     return HttpResponseRedirect(reverse('home'))
@@ -40,20 +41,25 @@ def performance(request):
                 complaints.append({'id': row[0], 'body': row[1], 'category': row[3]})
 
         # Preprocessing:
-        #start = time.time()
-        #print('Preprocessing complaints...')
-        #preprocessed_complaints = preprocess(complaints)
-        #print('Finished after {0} seconds.'.format(time.time() - start))
+        start = time.time()
+        print('Preprocessing complaints...')
+        preprocessed_complaints = preprocess(complaints)
+        print('Finished after {0:.4f} seconds.'.format(time.time() - start))
 
-        #start = time.time()
-        #print('Extracting features...')
-        #features = extract_features(preprocessed_complaints)
-        #print('Finished after {0} seconds.'.format(time.time() - start))
+        start = time.time()
+        print('Extracting features...')
+        # features = extract_features(preprocessed_complaints)
+        # with open('globals/data/features.json', 'w') as features_file:
+        #     json.dump(features, features_file)
+        with open('globals/data/features.json', 'r') as features_file:
+            features = json.load(features_file)
+        print('Finished after {0:.4f} seconds.'.format(time.time() - start))
 
-        #start = time.time()
-        #print('Vectorizing...')
-        #vectorize(preprocessed_complaints, features)
-        #print('Finished after {0} seconds.'.format(time.time() - start))
+        start = time.time()
+        print('Vectorizing...')
+        # vectorize(preprocessed_complaints, features)
+        nb_vectorize(preprocessed_complaints, features)
+        print('Finished after {0:.4f} seconds.'.format(time.time() - start))
 
         # Classification:
         start = time.time()
@@ -69,7 +75,7 @@ def performance(request):
         clf.fit(X_train, y_train)
 
         context['accuracy'] = '{0:.4f}'.format(clf.score(X_test, y_test) * 100)
-        print('Finished after {0} seconds.'.format(time.time() - start))
+        print('Finished after {0:.4f} seconds.'.format(time.time() - start))
 
         predict_list = X.reshape(len(X), -1)
         category_list = y
