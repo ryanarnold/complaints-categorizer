@@ -33,15 +33,6 @@ def extract_features(complaints):
 
 def vectorize(complaints, features):
 	file = open(VECTORIZED_CSV_PATH, 'w')
-	class_values = {
-		'newsinfo': 1,
-		'globalnation': 2,
-		'opinion': 3,
-		'technology': 4,
-		'entertainment': 5,
-		'business': 6,
-		'sports': 7,
-	}
 
 	for term in features:
 		file.write(term + ',')
@@ -65,6 +56,45 @@ def vectorize(complaints, features):
 		file.write('\n')
 
 	file.close()
+
+	return vectorized_complaints
+
+def nb_vectorize(complaints, features):
+	entire_text = []
+	for complaint in complaints:
+		for token in complaint['body']:
+			entire_text.append(token)
+
+	categories = ['1', '4', '5', '6']
+
+	category_text = {}
+	for category in categories:
+		category_text[category] = []
+		for c in complaints:
+			if c['category'] == category:
+				for token in c['body']:
+					category_text[category].append(token)
+
+	vectorized_complaints = list()
+
+	for complaint in complaints:
+		print('Vectorizing ' + complaint['id'])
+		vector = {}
+
+		for category in categories:
+			prob = float()			
+
+			for word in complaint['body']:
+				A = category_text[category].count(word) / len(category_text[category])
+				B = len(category_text[category]) / len(entire_text)
+				C = entire_text.count(word) / len(entire_text)
+				prob += (A * B) / C
+
+			n = len(complaint['body'])
+			vector[category] = prob / n
+
+		vectorized_complaints.append({'vector': vector, 'category': complaint['category'], 'id': complaint['id']})
+		break
 
 	return vectorized_complaints
 
