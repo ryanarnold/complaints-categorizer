@@ -94,7 +94,6 @@ def nb_vectorize(complaints, features):
 			vector[category] = prob / n
 
 		vectorized_complaints.append({'vector': vector, 'category': complaint['category'], 'id': complaint['id']})
-		break
 
 	return vectorized_complaints
 
