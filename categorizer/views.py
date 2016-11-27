@@ -60,16 +60,16 @@ def performance(request):
         start = time.time()
         print('Vectorizing...')
         # vectorize(preprocessed_complaints, features)
-        vectorized_complaints = nb_vectorize(preprocessed_complaints, features)
+        # vectorized_complaints = nb_vectorize(preprocessed_complaints, features)
 
-        with open('globals/data/vectorized.csv', 'w') as file:
-            for category in vectorized_complaints[0]['vector'].keys():
-                file.write(category + ',')
-            file.write('category\n')
-            for complaint in vectorized_complaints:
-                for category in vectorized_complaints[0]['vector'].keys():
-                    file.write(str(complaint['vector'][category]) + ',')
-                file.write(complaint['category'] + '\n')
+        # with open('globals/data/vectorized.csv', 'w') as file:
+        #     for category in vectorized_complaints[0]['vector'].keys():
+        #         file.write(category + ',')
+        #     file.write('category\n')
+        #     for complaint in vectorized_complaints:
+        #         for category in vectorized_complaints[0]['vector'].keys():
+        #             file.write(str(complaint['vector'][category]) + ',')
+        #         file.write(complaint['category'] + '\n')
 
         print('Finished after {0:.4f} seconds.'.format(time.time() - start))
 
