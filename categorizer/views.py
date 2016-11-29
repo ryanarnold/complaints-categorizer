@@ -82,19 +82,23 @@ def performance(request):
             vectorized_test_set = json.load(file)
 
         with open('globals/data/vectorized_train.csv', 'w') as file:
+            file.write('id,')
             for category in vectorized_train_set[0]['vector'].keys():
                 file.write(category + ',')
             file.write('category\n')
             for complaint in vectorized_train_set:
+                file.write(complaint['id'] + ',')
                 for category in vectorized_train_set[0]['vector'].keys():
                     file.write(str(complaint['vector'][category]) + ',')
                 file.write(complaint['category'] + '\n')
 
         with open('globals/data/vectorized_test.csv', 'w') as file:
+            file.write('id,')
             for category in vectorized_test_set[0]['vector'].keys():
                 file.write(category + ',')
             file.write('category\n')
             for complaint in vectorized_test_set:
+                file.write(complaint['id'] + ',')
                 for category in vectorized_test_set[0]['vector'].keys():
                     file.write(str(complaint['vector'][category]) + ',')
                 file.write(complaint['category'] + '\n')
@@ -106,19 +110,21 @@ def performance(request):
         print('Training...')
         df = pd.read_csv('globals/data/vectorized_train.csv')
 
-        X_train = np.array(df.drop(['category'],1))
+        X_train = np.array(df.drop(['category', 'id'],1))
         y_train = np.array(df['category'])
 
         df = pd.read_csv('globals/data/vectorized_test.csv')
 
-        X_test = np.array(df.drop(['category'],1))
+        X_test = np.array(df.drop(['category', 'id'],1))
         y_test = np.array(df['category'])
+        id_test = np.array(df['id'])
 
         # X_train, X_test, y_train, y_test = cross_validation.train_test_split(X,y,test_size=0.2)
 
         clf = neighbors.KNeighborsClassifier()
         clf.fit(X_train, y_train)
 
+        # Prepare output:
         context['accuracy'] = '{0:.4f}'.format(clf.score(X_test, y_test) * 100)
         print('Finished after {0:.4f} seconds.'.format(time.time() - start))
 
@@ -133,7 +139,7 @@ def performance(request):
         }
         for i in range(len(predictions_num)):
             correct = 'Yes' if predictions_num[i] == category_list[i] else 'No'    
-            context['prediction'].append({'id': i + 1, 'system_category': cats[str(predictions_num[i])], 'actual_category': cats[str(category_list[i])], 'correct': correct})
+            context['prediction'].append({'id': id_test[i], 'system_category': cats[str(predictions_num[i])], 'actual_category': cats[str(category_list[i])], 'correct': correct})
         
 
     return render(request, 'performance.html', context)
