@@ -5,6 +5,7 @@ from nltk.corpus import stopwords as stopwords_corpus
 from random import shuffle
 from categorizer.feature_selection import TFIDF, DF, chi_square
 from math import log
+import time
 
 VECTORIZED_CSV_PATH = 'globals/data/vectorized.csv'
 
@@ -75,6 +76,18 @@ def nb_vectorize(train_set, test_set, features):
 				for token in c['body']:
 					category_text[category].append(token)
 
+	word_prob = {}
+	for word in features:
+		if word not in entire_text:
+			continue
+		word_prob[word] = {}
+		for category in categories:
+			A = category_text[category].count(word) / len(category_text[category])
+			B = len(category_text[category]) / len(entire_text)
+			C = entire_text.count(word) / len(entire_text)
+			prob = (A * B) / C
+			word_prob[word][category] = prob
+
 	vectorized_train_set = list()
 
 	for complaint in train_set:
@@ -83,19 +96,16 @@ def nb_vectorize(train_set, test_set, features):
 
 		for category in categories:
 			prob = float()			
-
 			for word in complaint['body']:
-				A = category_text[category].count(word) / len(category_text[category])
-				B = len(category_text[category]) / len(entire_text)
-				C = entire_text.count(word) / len(entire_text)
-				prob += (A * B) / C
-
+				if word in features:
+					prob += word_prob[word][category]
 			n = len(complaint['body'])
 			vector[category] = prob / n
 
 		vectorized_train_set.append({'vector': vector, 'category': complaint['category'], 'id': complaint['id']})
 
 	vectorized_test_set = list()
+	print(vectorized_train_set[0])
 
 	for complaint in test_set:
 		print('Vectorizing ' + complaint['id'])
@@ -103,14 +113,9 @@ def nb_vectorize(train_set, test_set, features):
 
 		for category in categories:
 			prob = float()			
-
 			for word in complaint['body']:
-				A = category_text[category].count(word) / len(category_text[category])
-				B = len(category_text[category]) / len(entire_text)
-				C = entire_text.count(word) / len(entire_text)
-				if C > 0:
-					prob += (A * B) / C
-
+				if word in word_prob.keys():
+					prob += word_prob[word][category]
 			n = len(complaint['body'])
 			vector[category] = prob / n
 

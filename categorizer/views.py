@@ -69,12 +69,12 @@ def performance(request):
         start = time.time()
         print('Vectorizing...')
         # vectorize(preprocessed_complaints, features)
-        # vectorized_train_set, vectorized_test_set = nb_vectorize(train_set, test_set, features)
+        vectorized_train_set, vectorized_test_set = nb_vectorize(train_set, test_set, features)
 
-        # with open('globals/data/train.json', 'w') as file:
-        #     json.dump(vectorized_train_set, file)
-        # with open('globals/data/test.json', 'w') as file:
-        #     json.dump(vectorized_test_set, file)
+        with open('globals/data/train.json', 'w') as file:
+            json.dump(vectorized_train_set, file)
+        with open('globals/data/test.json', 'w') as file:
+            json.dump(vectorized_test_set, file)
 
         with open('globals/data/train.json', 'r') as file:
             vectorized_train_set = json.load(file)
