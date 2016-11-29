@@ -49,21 +49,21 @@ def performance(request):
         preprocessed_complaints = preprocess(complaints)
         print('Finished after {0:.4f} seconds.'.format(time.time() - start))
 
-        # Feature Extraction:
-        start = time.time()
-        print('Extracting features...')
-        # features = extract_features(preprocessed_complaints)
-        # with open('globals/data/features.json', 'w') as features_file:
-        #     json.dump(features, features_file)
-        with open('globals/data/features.json', 'r') as features_file:
-            features = json.load(features_file)
-        print('Finished after {0:.4f} seconds.'.format(time.time() - start))
-
         # Partition into training set and test set
         shuffle(preprocessed_complaints)
         half_point = int(len(complaints) * 0.8)
         train_set = preprocessed_complaints[:half_point]
         test_set = preprocessed_complaints[half_point:]
+
+        # Feature Extraction:
+        start = time.time()
+        print('Extracting features...')
+        features = extract_features(train_set)
+        with open('globals/data/features.json', 'w') as features_file:
+            json.dump(features, features_file)
+        with open('globals/data/features.json', 'r') as features_file:
+            features = json.load(features_file)
+        print('Finished after {0:.4f} seconds.'.format(time.time() - start))
 
         # Vectorization:
         start = time.time()

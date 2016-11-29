@@ -27,7 +27,6 @@ def extract_features(complaints):
 		text += complaint['body']
 	vocab = set(text)
 	initial_features = DF(vocab, complaints)	# eliminates too infrequent terms
-	print('Extracting useful features...')
 	informative_features = chi_square(initial_features, complaints)
 
 	return informative_features
@@ -91,7 +90,7 @@ def nb_vectorize(train_set, test_set, features):
 	vectorized_train_set = list()
 
 	for complaint in train_set:
-		print('Vectorizing ' + complaint['id'])
+		# print('Vectorizing ' + complaint['id'])
 		vector = {}
 
 		for category in categories:
@@ -105,10 +104,9 @@ def nb_vectorize(train_set, test_set, features):
 		vectorized_train_set.append({'vector': vector, 'category': complaint['category'], 'id': complaint['id']})
 
 	vectorized_test_set = list()
-	print(vectorized_train_set[0])
 
 	for complaint in test_set:
-		print('Vectorizing ' + complaint['id'])
+		# print('Vectorizing ' + complaint['id'])
 		vector = {}
 
 		for category in categories:
