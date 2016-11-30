@@ -2,6 +2,7 @@ from glob import glob
 from nltk import word_tokenize, PorterStemmer, FreqDist, NaiveBayesClassifier
 from nltk.classify import accuracy
 from nltk.corpus import stopwords as stopwords_corpus
+from nltk.corpus import words
 from random import shuffle
 from categorizer.feature_selection import TFIDF, DF, chi_square
 from math import log
@@ -12,12 +13,20 @@ VECTORIZED_CSV_PATH = 'globals/data/vectorized.csv'
 def preprocess(complaints):
 	punctuations = ['.', ':', ',', ';', '\'', '``', '\'\'', '(', ')', '[', ']', '...', '=', '-', '?', '!']
 	stopwords = stopwords_corpus.words('english')
+	english = words.words()
 	porter = PorterStemmer()
 	for complaint in complaints:
 		complaint['body'] = [token.lower().replace('\'', '') for token in word_tokenize(complaint['body']) if token not in punctuations]
 		complaint['body'] = [token for token in complaint['body'] if token not in stopwords and not token.isnumeric()]
 		complaint['body'] = [token for token in complaint['body'] if token != 'said']
-		complaint['body'] = [porter.stem(token) for token in complaint['body']]
+		stemmed = []
+		# complaint['body'] = [porter.stem(token) for token in complaint['body'] if token in english_words.words()]
+		for token in complaint['body']:
+			if token in english:
+				stemmed.append(porter.stem(token))
+			else:
+				stemmed.append(token)
+		complaint['body'] = stemmed
 
 	return complaints
 
