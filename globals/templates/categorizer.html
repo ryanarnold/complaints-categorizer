@@ -42,18 +42,28 @@
                 <p>Enter a complaint.</p>
             </div>
 
-
+            <form action="/categorizer/">
             <div class="input-field">
                 <textarea rows="15" cols="150" name="message" class="form-control" placeholder="Complaint..."></textarea>
             </div>
 			<input id="fileSelect" style="margin-bottom: 20px" type="file" accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" />  
 
-            <form action="/categorized/">
+            
             <input type="submit" id="submit" class="btn btn-blue btn-effect" value="SUBMIT"/>
             </form></div>
                 </div>              
                  <!-- /. ROW  -->
                   <hr />
+                  <div class="row">
+                      <div class="col-md-6">
+                          <h3>Complaint:</h3>
+                          <p>{{ complaint }}</p>
+                      </div>
+                      <div class="col-md-6">
+                          <h3>Category:</h3>
+                          <p>{{ category }}</p>
+                      </div>
+                  </div>
                 <hr />                   
     </div>
              <!-- /. PAGE INNER  -->

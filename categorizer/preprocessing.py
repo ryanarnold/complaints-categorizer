@@ -1,25 +1,19 @@
-from glob import glob
-from nltk import word_tokenize, PorterStemmer, FreqDist, NaiveBayesClassifier
-from nltk.classify import accuracy
+from nltk import word_tokenize, PorterStemmer
 from nltk.corpus import stopwords as stopwords_corpus
 from nltk.corpus import words
 from random import shuffle
-from categorizer.feature_selection import TFIDF, DF, chi_square
-from math import log
+from categorizer.feature_selection import DF, chi_square
 import time
 import json
-import csv
-import numpy as np
-from sklearn import preprocessing, cross_validation, neighbors
-import pandas as pd
+from sklearn import preprocessing, cross_validation
 
 VECTORIZED_CSV_PATH = 'globals/data/vectorized.csv'
 
+
 def preprocess(complaints):
-    # translator = Translator('termtranslation_123', '5iFGxhem9bewVDqd4m6mMvT1UAHRueLrR71roc8SRHI=')
-    punctuations = ['.', ':', ',', ';', '\'', '``', '\'\'', '(', ')', '[', ']', '...', '=', '-', '?', '!']
+    punctuations = ['.', ':', ',', ';', '\'', '``', '\'\'', '(', ')',
+                    '[', ']', '...', '=', '-', '?', '!']
     stopwords = stopwords_corpus.words('english')
-    english = words.words()
     porter = PorterStemmer()
     for complaint in complaints:
         complaint['body'] = [token.lower().replace('\'', '') for token in word_tokenize(complaint['body']) if token not in punctuations]
@@ -142,6 +136,11 @@ def execute_preprocessing(complaints):
     train_set = preprocessed_complaints[:half_point]
     test_set = preprocessed_complaints[half_point:]
 
+    with open('globals/data/preprocessed_train.json', 'w') as file:
+        json.dump(train_set, file)
+    with open('globals/data/preprocessed_test.json', 'w') as file:
+        json.dump(test_set, file)
+
     # Feature Extraction:
     start = time.time()
     print('Extracting features...')
@@ -193,3 +192,47 @@ def execute_preprocessing(complaints):
     print('Finished after {0:.4f} seconds.'.format(time.time() - start))
 
     return vectorized_train_set, vectorized_test_set
+
+def preprocess_single(complaint):
+    # Turn it into a list, since the functions only accept lists:
+    complaints = []
+    complaints.append({
+        'id': '',
+        'body': complaint,
+        'category': ''
+    })
+
+    preprocessed = preprocess(complaints)
+
+    with open('globals/data/features.json', 'r') as file:
+        features = json.load(file)
+
+    with open('globals/data/preprocessed_train.json', 'r') as file:
+        train_set = json.load(file)
+    with open('globals/data/preprocessed_test.json', 'r') as file:
+        test_set = json.load(file)
+    test_set.append(complaints[0])
+
+    vectorized_train_set, vectorized_test_set = nb_vectorize(train_set, test_set, features)
+
+    with open('globals/data/vectorized_train.csv', 'w') as file:
+        file.write('id,')
+        for category in vectorized_train_set[0]['vector'].keys():
+            file.write(category + ',')
+        file.write('category\n')
+        for complaint in vectorized_train_set:
+            file.write(complaint['id'] + ',')
+            for category in vectorized_train_set[0]['vector'].keys():
+                file.write(str(complaint['vector'][category]) + ',')
+            file.write(complaint['category'] + '\n')
+
+    with open('globals/data/vectorized_test.csv', 'w') as file:
+        file.write('id,')
+        for category in vectorized_test_set[0]['vector'].keys():
+            file.write(category + ',')
+        file.write('category\n')
+        for complaint in vectorized_test_set:
+            file.write(complaint['id'] + ',')
+            for category in vectorized_test_set[0]['vector'].keys():
+                file.write(str(complaint['vector'][category]) + ',')
+            file.write(complaint['category'] + '\n')
