@@ -14,13 +14,31 @@ def preprocess(complaints):
     punctuations = ['.', ':', ',', ';', '\'', '``', '\'\'', '(', ')',
                     '[', ']', '...', '=', '-', '?', '!']
     stopwords = stopwords_corpus.words('english')
+    english = words.words()
     porter = PorterStemmer()
+    with open('translated.json') as translated_file:    
+            trans = json.load(translated_file)
     for complaint in complaints:
         complaint['body'] = [token.lower().replace('\'', '') for token in word_tokenize(complaint['body']) if token not in punctuations]
         complaint['body'] = [token for token in complaint['body'] if token not in stopwords and not token.isnumeric()]
         complaint['body'] = [token for token in complaint['body'] if token != 'said']
-        complaint['body'] = [porter.stem(token) for token in complaint['body']]
-
+        #complaint['body'] = [porter.stem(token) for token in complaint['body']]
+        stemmed = []
+        for token in complaint['body']:
+                        if token in english:
+                                stemmed.append(porter.stem(token))
+                        else:
+                                #sample = "Kamusta kana"
+                                #print(token)
+                                try:
+                                    translated = trans[token]
+                                    stemmed.append(translated)
+                                except KeyError:
+                                    #print (e)
+                                    #print(token)
+                                    stemmed.append(token)
+        complaint['body'] = stemmed
+                
     return complaints
 
 def extract_features(complaints):
