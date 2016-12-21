@@ -13,7 +13,7 @@ def DF(vocab, complaints):
 	for term in vocab:
 		term_DF[term] = sum([1 for complaint in complaints if term in complaint['body']])
 
-	threshold = 2
+	threshold = 4
 	features = [term for term in term_DF.keys() if term_DF[term] > threshold]
 
 	return features
@@ -29,7 +29,7 @@ def chi_square(vocab, complaints):
 		# 'entertainment',
 		# 'business',
 		# 'sports',
-		'1', '4', '5', '6'
+		'1', '4', '5', '6', '10'
 	]
 	N = len(complaints)
 	

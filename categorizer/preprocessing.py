@@ -1,45 +1,94 @@
 from nltk import word_tokenize, PorterStemmer
 from nltk.corpus import stopwords as stopwords_corpus
-from nltk.corpus import words
+from nltk.corpus import words, brown, reuters
+from nltk.metrics import edit_distance
 from random import shuffle
 from categorizer.feature_selection import DF, chi_square
 import time
 import json
-from sklearn import preprocessing, cross_validation
+from sklearn import preprocessing
+import csv
+import re
 
 VECTORIZED_CSV_PATH = 'globals/data/vectorized.csv'
 
+punctuations = ['.', ':', ',', ';', '\'', '``', '\'\'', '(', ')', '•', '%',
+                '[', ']', '...', '=', '-', '?', '!', '”', '@', '<', '\\\\']
+punc = re.compile(r'[^a-zA-Z0-9]')
 
-def preprocess(complaints):
-    punctuations = ['.', ':', ',', ';', '\'', '``', '\'\'', '(', ')',
-                    '[', ']', '...', '=', '-', '?', '!']
-    stopwords = stopwords_corpus.words('english')
-    english = words.words()
-    porter = PorterStemmer()
-    with open('translated.json') as translated_file:    
-            trans = json.load(translated_file)
-    for complaint in complaints:
-        complaint['body'] = [token.lower().replace('\'', '') for token in word_tokenize(complaint['body']) if token not in punctuations]
-        complaint['body'] = [token for token in complaint['body'] if token not in stopwords and not token.isnumeric()]
-        complaint['body'] = [token for token in complaint['body'] if token != 'said']
-        #complaint['body'] = [porter.stem(token) for token in complaint['body']]
-        stemmed = []
-        for token in complaint['body']:
-                        if token in english:
-                                stemmed.append(porter.stem(token))
-                        else:
-                                #sample = "Kamusta kana"
-                                #print(token)
-                                try:
-                                    translated = trans[token]
-                                    stemmed.append(translated)
-                                except KeyError:
-                                    #print (e)
-                                    #print(token)
-                                    stemmed.append(token)
-        complaint['body'] = stemmed
-                
+# Stopwords corpus
+stopwords = stopwords_corpus.words('english')
+stopwords.append('said')
+
+# Vocabulary of all English words
+english = set(brown.words())
+english.update(set(reuters.words()))
+
+# Vocabulary of all Tagalog words
+with open('globals/data/tagalog.json', 'r') as file:
+    tagalog = json.load(file)
+
+# Stemmer
+porter = PorterStemmer()
+
+# Translation table
+with open('translated.json') as translated_file:    
+    trans = json.load(translated_file)
+
+
+def hasnum(string):
+    for i in ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']:
+        if i in string:
+            return True
+    return False
+
+def load_raw(filepath):
+    complaints = []
+    with open(filepath, 'r') as file:
+        reader = csv.reader(file)
+        for row in reader:
+            complaints.append({
+                'id': row[0],
+                'body': row[1],
+                'category': row[3]
+            })
+
     return complaints
+
+def tokenize(text):
+    tokens = []
+    for token in word_tokenize(text):
+        token = token.lower().replace('\'', '').replace('“', '').replace('’', '')
+        if punc.search(token) == None and token not in punctuations:
+            tokens.append(token)
+        elif token not in punctuations:
+            token = punc.sub(' ', token)
+            for t in word_tokenize(token):
+                tokens.append(t)
+
+    return tokens
+
+def remove_stopwords(text):
+    text = [token for token in text if token not in stopwords and not hasnum(token)]
+    return text
+
+def stem(text):
+    stemmed = []
+    for token in text:
+        stemmed.append(porter.stem(token))
+        # if token in english:
+        #     stemmed.append(porter.stem(token))
+        # else:
+        #     try:
+        #         translated = trans[token].lower()
+        #         if translated not in stopwords:
+        #             stemmed.append(porter.stem(translated.lower()))
+        #             # print(translated)
+        #     except KeyError:
+        #         print(token)
+        #         stemmed.append(porter.stem(translated.lower()))
+    
+    return stemmed
 
 def extract_features(complaints):
     text = list()
@@ -85,7 +134,7 @@ def nb_vectorize(train_set, test_set, features):
         for token in complaint['body']:
             entire_text.append(token)
 
-    categories = ['1', '4', '5', '6']
+    categories = ['1', '4', '5', '6', '10']
 
     category_text = {}
     for category in categories:
@@ -141,116 +190,41 @@ def nb_vectorize(train_set, test_set, features):
 
     return vectorized_train_set, vectorized_test_set
 
-def execute_preprocessing(complaints):
-	# Preprocessing:
-    start = time.time()
-    print('Preprocessing complaints...')
-    preprocessed_complaints = preprocess(complaints)
-    print('Finished after {0:.4f} seconds.'.format(time.time() - start))
-
-    # Partition into training set and test set
-    shuffle(preprocessed_complaints)
-    half_point = int(len(complaints) * 0.8)
-    train_set = preprocessed_complaints[:half_point]
-    test_set = preprocessed_complaints[half_point:]
-
-    with open('globals/data/preprocessed_train.json', 'w') as file:
-        json.dump(train_set, file)
-    with open('globals/data/preprocessed_test.json', 'w') as file:
-        json.dump(test_set, file)
-
-    # Feature Extraction:
-    start = time.time()
-    print('Extracting features...')
-    features = extract_features(train_set)
-    with open('globals/data/features.json', 'w') as features_file:
-        json.dump(features, features_file)
-    with open('globals/data/features.json', 'r') as features_file:
-        features = json.load(features_file)
-    print('Finished after {0:.4f} seconds.'.format(time.time() - start))
-
-    # Vectorization:
-    start = time.time()
-    print('Vectorizing...')
-    # vectorize(preprocessed_complaints, features)
-    vectorized_train_set, vectorized_test_set = nb_vectorize(train_set, test_set, features)
-
-    with open('globals/data/train.json', 'w') as file:
-        json.dump(vectorized_train_set, file)
-    with open('globals/data/test.json', 'w') as file:
-        json.dump(vectorized_test_set, file)
-
-    with open('globals/data/train.json', 'r') as file:
-        vectorized_train_set = json.load(file)
-    with open('globals/data/test.json', 'r') as file:
-        vectorized_test_set = json.load(file)
-
-    with open('globals/data/vectorized_train.csv', 'w') as file:
+def write_csv(complaints, filepath):
+    with open(filepath, 'w') as file:
         file.write('id,')
-        for category in vectorized_train_set[0]['vector'].keys():
+        for category in complaints[0]['vector'].keys():
             file.write(category + ',')
         file.write('category\n')
-        for complaint in vectorized_train_set:
+        for complaint in complaints:
             file.write(complaint['id'] + ',')
-            for category in vectorized_train_set[0]['vector'].keys():
+            for category in complaints[0]['vector'].keys():
                 file.write(str(complaint['vector'][category]) + ',')
             file.write(complaint['category'] + '\n')
 
-    with open('globals/data/vectorized_test.csv', 'w') as file:
-        file.write('id,')
-        for category in vectorized_test_set[0]['vector'].keys():
-            file.write(category + ',')
-        file.write('category\n')
-        for complaint in vectorized_test_set:
-            file.write(complaint['id'] + ',')
-            for category in vectorized_test_set[0]['vector'].keys():
-                file.write(str(complaint['vector'][category]) + ',')
-            file.write(complaint['category'] + '\n')
+def write_json(object, filepath):
+    with open(filepath, 'w') as file:
+        json.dump(object, file)
 
-    print('Finished after {0:.4f} seconds.'.format(time.time() - start))
+def load_json(filepath):
+    with open(filepath, 'r') as file:
+        obj = json.load(file)
+    return obj
 
-    return vectorized_train_set, vectorized_test_set
+def find_closest_word(word):
+    best_words = []
+    for w in tagalog:
+        if w[0] != word[0]:
+            continue
+        dist = edit_distance(word, w)
+        if dist < 3:
+            best_words.append(w)
+    for w in english:
+        if w[0] != word[0]:
+            continue
+        dist = edit_distance(word, w)
+        dist = edit_distance(word, w)
+        if dist < 3:
+            best_words.append(w)
 
-def preprocess_single(complaint):
-    # Turn it into a list, since the functions only accept lists:
-    complaints = []
-    complaints.append({
-        'id': '',
-        'body': complaint,
-        'category': ''
-    })
-
-    preprocessed = preprocess(complaints)
-
-    with open('globals/data/features.json', 'r') as file:
-        features = json.load(file)
-
-    with open('globals/data/preprocessed_train.json', 'r') as file:
-        train_set = json.load(file)
-    with open('globals/data/preprocessed_test.json', 'r') as file:
-        test_set = json.load(file)
-    test_set.append(complaints[0])
-
-    vectorized_train_set, vectorized_test_set = nb_vectorize(train_set, test_set, features)
-
-    with open('globals/data/vectorized_train.csv', 'w') as file:
-        file.write('id,')
-        for category in vectorized_train_set[0]['vector'].keys():
-            file.write(category + ',')
-        file.write('category\n')
-        for complaint in vectorized_train_set:
-            file.write(complaint['id'] + ',')
-            for category in vectorized_train_set[0]['vector'].keys():
-                file.write(str(complaint['vector'][category]) + ',')
-            file.write(complaint['category'] + '\n')
-
-    with open('globals/data/vectorized_test.csv', 'w') as file:
-        file.write('id,')
-        for category in vectorized_test_set[0]['vector'].keys():
-            file.write(category + ',')
-        file.write('category\n')
-        for complaint in vectorized_test_set:
-            file.write(complaint['id'] + ',')
-            for category in vectorized_test_set[0]['vector'].keys():
-                file.write(str(complaint['vector'][category]) + ',')
-            file.write(complaint['category'] + '\n')
+    return best_words
