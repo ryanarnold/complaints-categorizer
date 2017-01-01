@@ -105,10 +105,13 @@ def performance(request):
         complaints = load_raw(RAW_CSV_PATH)
 
         # Tokenization, Stopword Removal, and Stemming
+        i = 1
         for complaint in complaints:
             complaint['body'] = tokenize(complaint['body'])
             complaint['body'] = remove_stopwords(complaint['body'])
             complaint['body'] = stem(complaint['body'])
+            print('Finished complaint # ' + str(i))
+            i += 1
 
         # Partition into training set and test set
         shuffle(complaints)

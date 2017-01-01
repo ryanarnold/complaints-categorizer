@@ -26,13 +26,13 @@ english.update(set(reuters.words()))
 
 # Vocabulary of all Tagalog words
 with open('globals/data/tagalog.json', 'r') as file:
-    tagalog = json.load(file)
+    tagalog = set(json.load(file))
 
 # Stemmer
 porter = PorterStemmer()
 
 # Translation table
-with open('translated.json') as translated_file:    
+with open('globals/data/translated.json') as translated_file:
     trans = json.load(translated_file)
 
 
@@ -75,18 +75,23 @@ def remove_stopwords(text):
 def stem(text):
     stemmed = []
     for token in text:
-        stemmed.append(porter.stem(token))
-        # if token in english:
-        #     stemmed.append(porter.stem(token))
-        # else:
-        #     try:
-        #         translated = trans[token].lower()
-        #         if translated not in stopwords:
-        #             stemmed.append(porter.stem(translated.lower()))
-        #             # print(translated)
-        #     except KeyError:
-        #         print(token)
-        #         stemmed.append(porter.stem(translated.lower()))
+        if token in english:
+            stemmed.append(porter.stem(token))
+        elif token in tagalog:
+            translation = trans[token].lower() if trans[token] != '-' else token
+            for t in word_tokenize(translation):
+                if t not in stopwords:
+                    stemmed.append(porter.stem(t))
+        else:
+            # try:
+            #     translated = trans[token].lower()
+            #     if translated not in stopwords:
+            #         stemmed.append(porter.stem(translated.lower()))
+            #         # print(translated)
+            # except KeyError:
+            #     print(token)
+            #     stemmed.append(porter.stem(translated.lower()))
+            pass
     
     return stemmed
 
