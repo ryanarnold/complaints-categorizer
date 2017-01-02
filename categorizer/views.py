@@ -108,6 +108,7 @@ def performance(request):
         i = 1
         for complaint in complaints:
             complaint['body'] = tokenize(complaint['body'])
+            complaint['body'] = ner(complaint['body'])
             complaint['body'] = remove_stopwords(complaint['body'])
             complaint['body'] = stem(complaint['body'])
             print('Finished complaint # ' + str(i))

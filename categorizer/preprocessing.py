@@ -35,6 +35,10 @@ porter = PorterStemmer()
 with open('globals/data/translated.json') as translated_file:
     trans = json.load(translated_file)
 
+# Road List
+with open('globals/data/roadlist.json') as f:
+    roadlist = json.load(f)
+
 
 def hasnum(string):
     for i in ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']:
@@ -67,6 +71,29 @@ def tokenize(text):
                 tokens.append(t)
 
     return tokens
+
+def ner(text):
+    i=0
+    for i in range(len(text)):
+        for j in range(len(roadlist)):
+            try:
+                if text[i].lower() == roadlist[j].lower():
+                    #print ("road na me")
+                    text[i] = "road"
+                elif text[i].lower() in roadlist[j].lower():
+                    if text[i+1].lower() in roadlist[j].lower():
+                        #print ("YEy road na sya")
+                        text[i] = "road"
+                    else:
+                            #print("Sad")
+                        pass
+                else:
+                    pass
+            except Exception as e:
+                #print("Error has occurred", e)
+                pass
+
+    return (text)
 
 def remove_stopwords(text):
     text = [token for token in text if token not in stopwords and not hasnum(token)]
