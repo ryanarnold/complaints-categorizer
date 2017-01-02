@@ -48,7 +48,7 @@ def hasnum(string):
 
 def load_raw(filepath):
     complaints = []
-    with open(filepath, 'r') as file:
+    with open(filepath, 'r', encoding='utf-8') as file:
         reader = csv.reader(file)
         for row in reader:
             complaints.append({
