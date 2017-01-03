@@ -133,33 +133,26 @@ def extract_features(complaints):
 
     return informative_features
 
-def vectorize(complaints, features):
-    file = open(VECTORIZED_CSV_PATH, 'w')
-
-    for term in features:
-        file.write(term + ',')
-    file.write('category\n')
-
-    vectorized_complaints = []
-    i = 1
-    for complaint in complaints:
-        print('Vectorizing complaint # ' + str(i))
-        i += 1
+def vectorize(train_set, test_set, features):
+    vectorized_train_set = []
+    for complaint in train_set:
         vector = {}
         for term in features:    
             # TF = complaint['body'].count(term)
             # vector[term] = TFIDF(TF, complaints, term)
             vector[term] = complaint['body'].count(term)
-        vectorized_complaints.append({'category': complaint['category'], 'vector': vector})
-        
-        for term in vector.keys():
-            file.write(str(vector[term]) + ',')
-        file.write(str(complaint['category']))
-        file.write('\n')
+        vectorized_train_set.append({'vector': vector, 'category': complaint['category'], 'id': complaint['id']})
 
-    file.close()
+    vectorized_test_set = []
+    for complaint in test_set:
+        vector = {}
+        for term in features:    
+            # TF = complaint['body'].count(term)
+            # vector[term] = TFIDF(TF, complaints, term)
+            vector[term] = complaint['body'].count(term)
+        vectorized_test_set.append({'vector': vector, 'category': complaint['category'], 'id': complaint['id']})
 
-    return vectorized_complaints
+    return vectorized_train_set, vectorized_test_set
 
 def nb_vectorize(train_set, test_set, features):
     entire_text = []

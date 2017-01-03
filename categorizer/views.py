@@ -108,7 +108,7 @@ def performance(request):
         i = 1
         for complaint in complaints:
             complaint['body'] = tokenize(complaint['body'])
-            complaint['body'] = ner(complaint['body'])
+            # complaint['body'] = ner(complaint['body'])
             complaint['body'] = remove_stopwords(complaint['body'])
             complaint['body'] = stem(complaint['body'])
             print('Finished complaint # ' + str(i))
@@ -176,7 +176,7 @@ def traditional(request):
         i = 1
         for complaint in complaints:
             complaint['body'] = tokenize(complaint['body'])
-            complaint['body'] = ner(complaint['body'])
+            # complaint['body'] = ner(complaint['body'])
             complaint['body'] = remove_stopwords(complaint['body'])
             complaint['body'] = stem(complaint['body'])
             print('Finished complaint # ' + str(i))
@@ -195,7 +195,7 @@ def traditional(request):
         write_json(features, FEATURES_JSON_PATH)
 
         # Vectorization
-        train_set, test_set = nb_vectorize(train_set, test_set, features)
+        train_set, test_set = vectorize(train_set, test_set, features)
 
         # Put vectorized data in csv (sklearn reads from csv kasi)
         write_csv(train_set, VECTORIZED_TRAIN_CSV_PATH)
