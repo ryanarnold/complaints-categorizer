@@ -1,0 +1,170 @@
+{% extends "header.html" %}
+
+{% block content %}
+
+        <div id="page-wrapper" >
+            <div id="page-inner">
+                <div class="row">
+                    <div class="col-md-12">
+                     <h2>Performance using Traditional Method</h2>   
+                        <h5>This page will output the precision, recall, F-measure and accuracy
+						of the categorizer using the traditional method of TF-IDF and k-Nearest
+						Neighbor algorithm. This will use the data provided in the "Data to be used"
+						page. It will partition that data into two: the training set and the test set.
+						</h5>
+						
+                        <form method="post">
+                            <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+                            <input type="submit" name="submit" value="Begin Training" class="btn btn-md btn-default">
+                        </form>
+
+                        <!-- <h3>Accuracy: {{ accuracy }}</h3> -->
+
+						
+						<br>
+<table>
+  <tr>
+    <th>Category</th>
+    <th>TP</th>
+    <th>FP</th>
+    <th>TN</th>
+    <th>FN</th>
+    <th>P</th>
+    <th>R</th>
+    <th>F1</th>
+    <th>Acc</th>
+  </tr>
+  <tr>
+    <td>Bridges</td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>Commendation</td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>Flood Control</td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>HR</td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>Request for Info</td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>Roads</td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+  </tr>
+  <tr>
+    <th>Average</th>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td style="background-color: #dddddd;" ></td>
+    <td style="background-color: #dddddd;" ></td>
+    <td style="background-color: #dddddd;" ></td>
+    <td>{{ accuracy }}</td>
+  </tr>
+  <tr>
+    <th>Macro-average</th>
+    <td style="background-color: #dddddd;" ></td>
+    <td style="background-color: #dddddd;" ></td>
+    <td style="background-color: #dddddd;" ></td>
+    <td style="background-color: #dddddd;" ></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td style="background-color: #dddddd;" ></td>
+  </tr>
+  <tr>
+    <th>Micro-average</th>
+    <td style="background-color: #dddddd;" ></td>
+    <td style="background-color: #dddddd;" ></td>
+    <td style="background-color: #dddddd;" ></td>
+    <td style="background-color: #dddddd;" ></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td style="background-color: #dddddd;" ></td>
+  </tr>
+</table>
+
+<br> <br> 
+<table>
+  <tr>
+    <th>Complaint ID</th>
+    <th>System Category</th>
+    <th>Actual Category</th>
+    <th>Correct?</th>
+  </tr>
+  {% for preds in prediction %}
+	{% if preds['correct'] == 'Yes' %}
+		<tr style="color: #00af00;">
+	{% else %}
+		<tr style="color: red;">
+	{% endif %}
+    <td>{{ preds['id'] }}</td>
+    <td>{{ preds['system_category'] }}</td>
+    <td>{{ preds['actual_category'] }}</td>
+    <td>{{ preds['correct'] }}</td>
+  </tr>
+  {% endfor %}
+</table>
+                    </div>
+                </div>              
+                         <!-- /. ROW  -->
+                          <hr />
+                        <hr />                   
+            </div>
+             <!-- /. PAGE INNER  -->
+            </div>
+         <!-- /. PAGE WRAPPER  -->
+
+
+{% endblock %}
