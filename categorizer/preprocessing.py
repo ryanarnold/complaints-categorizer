@@ -75,23 +75,24 @@ def tokenize(text):
 def ner(text):
     i=0
     for i in range(len(text)):
-        for j in range(len(roadlist)):
-            try:
-                if text[i].lower() == roadlist[j].lower():
-                    #print ("road na me")
-                    text[i] = "road"
-                elif text[i].lower() in roadlist[j].lower():
-                    if text[i+1].lower() in roadlist[j].lower():
-                        #print ("YEy road na sya")
-                        text[i] = "road"
+        try:
+            if text[i].lower() in roadlist:
+                #print ("road na me")
+                text[i] = "road"
+            else:
+                for j in range(len(roadlist)):
+                    if text[i].lower() in roadlist[j]:
+                        if text[i+1].lower() in roadlist[j]:
+                            #print ("YEy road na sya")
+                            text[i] = "road"
+                        else:
+                                #print("Sad")
+                            pass
                     else:
-                            #print("Sad")
                         pass
-                else:
-                    pass
-            except Exception as e:
-                #print("Error has occurred", e)
-                pass
+        except Exception as e:
+            #print("Error has occurred", e)
+            pass
 
     return (text)
 
