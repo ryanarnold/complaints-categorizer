@@ -64,7 +64,7 @@ def load_raw1(filepath):
     with open(filepath, 'r', encoding='utf-8') as file:
         reader = csv.reader(file)
         for row in reader:
-            if row[4] != None:
+            if row[4] != 'NULL':
                 complaints.append({
                     'id': row[0],
                     'body': row[1],
