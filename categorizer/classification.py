@@ -19,3 +19,12 @@ def train_classifier(train_x, train_y):
     clf.fit(train_x, train_y)
 
     return clf
+
+def get_scores(actual, predicted, category):
+    TP = 0
+    indexes = [i for i in range(len(actual)) if actual[i] == category]
+    for i in indexes:
+        if actual[i] == predicted[i]:
+            TP += 1
+
+    return {'TP': TP}

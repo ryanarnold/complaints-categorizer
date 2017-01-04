@@ -124,7 +124,15 @@ def data(request):
 
 
 def performance(request):
-    context = {'accuracy': 0.0, 'prediction': [], }
+    context = {
+        'accuracy': 0.0, 
+        'prediction': [], 
+        'road_scores': {'TP': ''},
+        'hr_scores': {'TP': ''},
+        'flood_scores': {'TP': ''},
+        'commend_scores': {'TP': ''},
+        'bridge_scores': {'TP': ''},
+    }
 
     if request.method == 'POST':
         complaints = load_raw(RAW_CSV_PATH)
@@ -173,6 +181,12 @@ def performance(request):
         predict_list = test_x.reshape(len(test_x), -1)
         category_list = test_y
         predictions_num = classifier.predict(predict_list)
+
+        context['hr_scores'] = get_scores(category_list, predictions_num, 1)
+        context['road_scores'] = get_scores(category_list, predictions_num, 4)
+        context['bridge_scores'] = get_scores(category_list, predictions_num, 5)
+        context['flood_scores'] = get_scores(category_list, predictions_num, 6)
+        context['commend_scores'] = get_scores(category_list, predictions_num, 10)
 
         for i in range(len(predictions_num)):
             correct = 'Yes' if predictions_num[i] == category_list[i] else 'No'
