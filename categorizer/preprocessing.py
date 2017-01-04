@@ -123,13 +123,13 @@ def stem(text):
     
     return stemmed
 
-def extract_features(complaints):
+def extract_features(complaints, categories):
     text = list()
     for complaint in complaints:
         text += complaint['body']
     vocab = set(text)
     initial_features = DF(vocab, complaints)    # eliminates too infrequent terms
-    informative_features = chi_square(initial_features, complaints)
+    informative_features = chi_square(initial_features, complaints, categories)
 
     return informative_features
 
@@ -154,13 +154,11 @@ def vectorize(train_set, test_set, features):
 
     return vectorized_train_set, vectorized_test_set
 
-def nb_vectorize(train_set, test_set, features):
+def nb_vectorize(train_set, test_set, features, categories):
     entire_text = []
     for complaint in train_set:
         for token in complaint['body']:
             entire_text.append(token)
-
-    categories = ['1', '4', '5', '6', '10']
 
     category_text = {}
     for category in categories:

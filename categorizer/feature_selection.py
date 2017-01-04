@@ -18,19 +18,9 @@ def DF(vocab, complaints):
 
 	return features
 
-def chi_square(vocab, complaints):
+def chi_square(vocab, complaints, categories):
 	features = []
 	chi_table = dict()
-	categories = [
-		# 'newsinfo',
-		# 'globalnation',
-		# 'opinion',
-		# 'technology',
-		# 'entertainment',
-		# 'business',
-		# 'sports',
-		'1', '4', '5', '6', '10'
-	]
 	N = len(complaints)
 	
 	for term in vocab:
