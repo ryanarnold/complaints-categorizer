@@ -26,5 +26,6 @@ urlpatterns = [
     url(r'^adminpage/$', views.adminpage, name='adminpage'),
     url(r'^data/$', views.data, name='data'),
     url(r'^performance/$', views.performance, name='performance'),
+    url(r'^subperformance/$', views.subperformance, name='subperformance'),
     url(r'^traditional/$', views.traditional, name='traditional')
 ]

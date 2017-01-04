@@ -23,6 +23,30 @@ CATEGORIES = {
     '10': 'COMMENDATIONS'
 }
 
+SUBCATEGORIES = {
+    '1': 'EMPLOYMENT',
+    '2': 'PAYMENT OF SALARIES',
+    '3': 'ALLEGATION OF MISBEHAVIOR/MALFEASANCE',
+    '5': 'CLAIMS OF BENEFITS',
+    '6': 'ALLEGATION OF DEFECTIVE ROAD CONSTRUCTION',
+    '7': 'ALLEGATION PF DELAYED ROAD CONSTRUCTION',
+    '8': 'ROAD SAFETY',
+    '9': 'ROAD SIGNS',
+    '10': 'POOR ROAD CONDITION',
+    '11': 'REQUEST FOR FUNDING',
+    '13': 'POOR BRIDGE CONDITION',
+    '14': 'BRIDGE SAFETY',
+    '15': 'ALLEGATION OF DEFECTIVE BRIDGE CONSTRUCTION',
+    '16': 'ALLEGATION OF DELAYED BRIDGE CONSTRUCTION',
+    '21': 'CLOOGED DRAINAGE',
+    '22': 'DEFECTIVE FLOOD CONTROL CONSTRUCTION',
+    '23': 'FLOOD CONTROL SAFETY',
+    '24': 'REQUEST FOR FUNDING',
+    '25': 'DELAYED FLOOD CONTROL CONSTRUCTION',
+    '26': 'APPLICATION',
+    '27': 'REQUEST FOR FUNDING'
+}
+
 def index(request):
     return HttpResponseRedirect(reverse('home'))
 
@@ -109,7 +133,7 @@ def performance(request):
         i = 1
         for complaint in complaints:
             complaint['body'] = tokenize(complaint['body'])
-            complaint['body'] = ner(complaint['body'])
+            #complaint['body'] = ner(complaint['body'])
             complaint['body'] = remove_stopwords(complaint['body'])
             complaint['body'] = stem(complaint['body'])
             print('Finished complaint # ' + str(i))
@@ -160,6 +184,68 @@ def performance(request):
             })
 
     return render(request, 'performance.html', context)
+
+def subperformance(request):
+    context = {'accuracy': 0.0, 'prediction': [], }
+
+    if request.method == 'POST':
+        complaints = load_raw1(RAW_CSV_PATH)
+
+        # Tokenization, Stopword Removal, and Stemming
+        i = 1
+        for complaint in complaints:
+            complaint['body'] = tokenize(complaint['body'])
+            #complaint['body'] = ner(complaint['body'])
+            complaint['body'] = remove_stopwords(complaint['body'])
+            complaint['body'] = stem(complaint['body'])
+            print('Finished complaint # ' + str(i))
+            i += 1
+
+        # Partition into training set and test set
+        shuffle(complaints)
+        half_point = int(len(complaints) * 0.8)
+        train_set = complaints[:half_point]
+        test_set = complaints[half_point:]
+        write_json(train_set, PREPROCESSED_TRAIN_JSON_PATH)
+        write_json(test_set, PREPROCESSED_TEST_JSON_PATH)
+
+        # Feature extraction (needed in vectorization)
+        features = extract_features(train_set, SUBCATEGORIES.keys())
+        write_json(features, FEATURES_JSON_PATH)
+
+        # Vectorization
+        train_set, test_set = nb_vectorize(train_set, test_set, features, SUBCATEGORIES.keys())
+
+        # Put vectorized data in csv (sklearn reads from csv kasi)
+        write_csv(train_set, VECTORIZED_TRAIN_CSV_PATH)
+        write_csv(test_set, VECTORIZED_TEST_CSV_PATH)
+
+        # Get the vectorized data, to prepare it for classification:
+        train_x = get_x(VECTORIZED_TRAIN_CSV_PATH)
+        train_y = get_y(VECTORIZED_TRAIN_CSV_PATH)
+        test_x = get_x(VECTORIZED_TEST_CSV_PATH)
+        test_y = get_y(VECTORIZED_TEST_CSV_PATH)
+        test_id = get_id(VECTORIZED_TEST_CSV_PATH)
+        classifier = train_classifier(train_x, train_y)
+
+        # Prepare output for template:
+        accuracy = classifier.score(test_x, test_y)
+        context['accuracy'] = '{0:.4f}'.format(accuracy * 100)
+
+        predict_list = test_x.reshape(len(test_x), -1)
+        category_list = test_y
+        predictions_num = classifier.predict(predict_list)
+
+        for i in range(len(predictions_num)):
+            correct = 'Yes' if predictions_num[i] == category_list[i] else 'No'
+            context['prediction'].append({
+                'id': test_id[i],
+                'system_category': SUBCATEGORIES[str(predictions_num[i])],
+                'actual_category': SUBCATEGORIES[str(category_list[i])],
+                'correct': correct
+            })
+
+    return render(request, 'subperformance.html', context)
 
 def traditional(request):
     context = {'accuracy': 0.0, 'prediction': [], }

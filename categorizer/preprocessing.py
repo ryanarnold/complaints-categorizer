@@ -59,6 +59,22 @@ def load_raw(filepath):
 
     return complaints
 
+def load_raw1(filepath):
+    complaints = []
+    with open(filepath, 'r', encoding='utf-8') as file:
+        reader = csv.reader(file)
+        for row in reader:
+            if row[4] != None:
+                complaints.append({
+                    'id': row[0],
+                    'body': row[1],
+                    'category': row[4]
+                })
+            else:
+                pass
+
+    return complaints
+
 def tokenize(text):
     tokens = []
     for token in word_tokenize(text):
