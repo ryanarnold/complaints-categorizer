@@ -16,11 +16,14 @@ Including another URLconf
 from django.conf.urls import url
 from django.contrib import admin
 from categorizer import views
+from django.conf.urls.static import static
+from django.conf import settings
 
 urlpatterns = [
     url(r'^$', views.index, name='index'),
     url(r'^home/$', views.home, name='home'),
     url(r'^categorizer/$', views.categorizer, name='categorizer'),
+    url(r'^multicategorizer/$', views.multicategorizer, name='multicategorizer'),
     url(r'^categorized/$', views.categorized, name='categorized'),
     url(r'^complaints/$', views.complaints, name='complaints'),
     url(r'^adminpage/$', views.adminpage, name='adminpage'),
@@ -29,3 +32,7 @@ urlpatterns = [
     url(r'^subperformance/$', views.subperformance, name='subperformance'),
     url(r'^traditional/$', views.traditional, name='traditional')
 ]
+
+if settings.DEBUG: 
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

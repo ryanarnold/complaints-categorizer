@@ -7,8 +7,10 @@ import numpy as np
 import pandas as pd
 import time
 import csv
+from io import TextIOWrapper
 
 RAW_CSV_PATH = 'globals/data/raw.csv'
+LOAD_PATH = 'globals/data/'
 VECTORIZED_TRAIN_CSV_PATH = 'globals/data/vectorized_train.csv'
 VECTORIZED_TEST_CSV_PATH = 'globals/data/vectorized_test.csv'
 PREPROCESSED_TRAIN_JSON_PATH = 'globals/data/preprocessed_train.json'
@@ -57,6 +59,7 @@ def home(request):
 
 def categorizer(request):
     complaint = request.GET.get('message')
+    complaintmessage = complaint
 
     if complaint is not None:
         # Tokenization, Stopword Removal, and Stemming
@@ -74,7 +77,7 @@ def categorizer(request):
 
         train_set = load_json(PREPROCESSED_TRAIN_JSON_PATH)
         test_set = load_json(PREPROCESSED_TEST_JSON_PATH)
-        test_set.append(complaints)
+        test_set.append(complaint)
 
         train_set, test_set = nb_vectorize(train_set, test_set, features, CATEGORIES.keys())
 
@@ -104,8 +107,87 @@ def categorizer(request):
         complaint = ''
         category = ''
         
-    return render(request, 'categorizer.html', {'complaint': complaint, 'category': category})
+    return render(request, 'categorizer.html', {'complaint': complaintmessage, 'category': category})
 
+def multicategorizer(request):
+    context = {
+        'accuracy': 0.0, 
+        'prediction': []
+    }
+    complaints = []
+    complaintpath = ""
+    if request.method == 'POST':
+        #complaints = load_raw(RAW_CSV_PATH)
+        complaint = request.FILES['csvfile'].name
+        complaintpath = LOAD_PATH + complaint
+        #print (complaint)
+        #reader = csv.DictReader(complaint)
+        print (LOAD_PATH)
+        print(complaint)
+        print(complaintpath)
+        complaints = load_multi(complaintpath)
+        #with open(complaintpath, 'r', encoding='utf-8') as file:
+        #    reader = csv.reader(file)
+       #     for row in reader:
+        #        complaints.append({
+        #            'id': row[0],
+        #            'body': row[1],
+        #            'category': row[3]
+        #        })
+        #path = complaint.temporary_file_path
+        #print (path)
+
+
+        #print (complaints)
+        # Tokenization, Stopword Removal, and Stemming
+        i = 1
+        for complaint in complaints:
+            complaint['body'] = tokenize(complaint['body'])
+            #complaint['body'] = ner(complaint['body'])
+            complaint['body'] = remove_stopwords(complaint['body'])
+            complaint['body'] = stem(complaint['body'])
+            print('Finished complaint # ' + str(i))
+            i += 1
+
+        # Partition into training set and test set
+
+        train_set = load_json(PREPROCESSED_TRAIN_JSON_PATH)
+        #test_set = load_json(PREPROCESSED_TEST_JSON_PATH)
+        test_set = complaints
+        write_json(test_set, PREPROCESSED_TEST_JSON_PATH)
+
+        features = load_json(FEATURES_JSON_PATH)
+
+        train_set, test_set = nb_vectorize(train_set, test_set, features, CATEGORIES.keys())
+
+        write_csv(train_set, VECTORIZED_TRAIN_CSV_PATH)
+        write_csv(test_set, VECTORIZED_TEST_CSV_PATH)
+
+        # Get the vectorized data, to prepare it for classification:
+        df = pd.read_csv(VECTORIZED_TRAIN_CSV_PATH)
+
+        X_train = np.array(df.drop(['category', 'id'], 1))
+        y_train = np.array(df['category'])
+
+        df = pd.read_csv(VECTORIZED_TEST_CSV_PATH)
+
+        X_test = np.array(df.drop(['category', 'id'], 1))
+        y_test = np.array(df['category'])
+        id_test = np.array(df['id'])
+
+        classifier = train_classifier(X_train, y_train)
+
+        predict_list = X_test.reshape(len(X_test), -1)
+        category_list = y_test
+        predictions_num = classifier.predict(predict_list)
+
+        for i in range(len(predictions_num)):
+            context['prediction'].append({
+                'id': id_test[i],
+                'system_category': CATEGORIES[str(predictions_num[i])]
+            })
+
+    return render(request, 'multicategorizer.html', context)
 
 def categorized(request):
     return render(request, 'categorized.html')
