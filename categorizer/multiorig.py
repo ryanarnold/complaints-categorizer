@@ -8,11 +8,9 @@ import pandas as pd
 import time
 import csv
 from io import TextIOWrapper
-from categorizer.forms import *
-from categorizer.models import *
 
 RAW_CSV_PATH = 'globals/data/raw.csv'
-LOAD_PATH = 'media/data/'
+LOAD_PATH = 'globals/data/'
 VECTORIZED_TRAIN_CSV_PATH = 'globals/data/vectorized_train.csv'
 VECTORIZED_TEST_CSV_PATH = 'globals/data/vectorized_test.csv'
 PREPROCESSED_TRAIN_JSON_PATH = 'globals/data/preprocessed_train.json'
@@ -118,85 +116,76 @@ def multicategorizer(request):
     }
     complaints = []
     complaintpath = ""
-    saved = False
     if request.method == 'POST':
-        fileform = JobFileSubmitForm(request.POST, request.FILES)
-        if fileform.is_valid():
-            jfs = fileform.save(commit=True)
-            file = request.FILES['file']
-            jfs.file = file.name
-            jfs.uploadDate = datetime.now()
-            # Save to DB
-            jfs.save()
-            #complaints = load_raw(RAW_CSV_PATH)
-            complaint = request.FILES['csvfile'].name
-            complaintpath = LOAD_PATH + complaint
-            print (complaint)
-            #reader = csv.DictReader(complaint)
-            print (LOAD_PATH)
-            print(complaint)
-            print(complaintpath)
-            complaints = load_multi(complaintpath)
-            #with open(complaintpath, 'r', encoding='utf-8') as file:
-            #    reader = csv.reader(file)
-           #     for row in reader:
-            #        complaints.append({
-            #            'id': row[0],
-            #            'body': row[1],
-            #            'category': row[3]
-            #        })
-            #path = complaint.temporary_file_path
-            #print (path)
+        #complaints = load_raw(RAW_CSV_PATH)
+        complaint = request.FILES['csvfile'].name
+        complaintpath = LOAD_PATH + complaint
+        #print (complaint)
+        #reader = csv.DictReader(complaint)
+        print (LOAD_PATH)
+        print(complaint)
+        print(complaintpath)
+        complaints = load_multi(complaintpath)
+        #with open(complaintpath, 'r', encoding='utf-8') as file:
+        #    reader = csv.reader(file)
+       #     for row in reader:
+        #        complaints.append({
+        #            'id': row[0],
+        #            'body': row[1],
+        #            'category': row[3]
+        #        })
+        #path = complaint.temporary_file_path
+        #print (path)
 
 
-            #print (complaints)
-            # Tokenization, Stopword Removal, and Stemming
-            i = 1
-            for complaint in complaints:
-                complaint['body'] = tokenize(complaint['body'])
-                #complaint['body'] = ner(complaint['body'])
-                complaint['body'] = remove_stopwords(complaint['body'])
-                complaint['body'] = stem(complaint['body'])
-                print('Finished complaint # ' + str(i))
-                i += 1
+        #print (complaints)
+        # Tokenization, Stopword Removal, and Stemming
+        i = 1
+        for complaint in complaints:
+            complaint['body'] = tokenize(complaint['body'])
+            #complaint['body'] = ner(complaint['body'])
+            complaint['body'] = remove_stopwords(complaint['body'])
+            complaint['body'] = stem(complaint['body'])
+            print('Finished complaint # ' + str(i))
+            i += 1
 
-            # Partition into training set and test set
+        # Partition into training set and test set
 
-            train_set = load_json(PREPROCESSED_TRAIN_JSON_PATH)
-            #test_set = load_json(PREPROCESSED_TEST_JSON_PATH)
-            test_set = complaints
-            write_json(test_set, PREPROCESSED_TEST_JSON_PATH)
+        train_set = load_json(PREPROCESSED_TRAIN_JSON_PATH)
+        #test_set = load_json(PREPROCESSED_TEST_JSON_PATH)
+        test_set = complaints
+        write_json(test_set, PREPROCESSED_TEST_JSON_PATH)
 
-            features = load_json(FEATURES_JSON_PATH)
+        features = load_json(FEATURES_JSON_PATH)
 
-            train_set, test_set = nb_vectorize(train_set, test_set, features, CATEGORIES.keys())
+        train_set, test_set = nb_vectorize(train_set, test_set, features, CATEGORIES.keys())
 
-            write_csv(train_set, VECTORIZED_TRAIN_CSV_PATH)
-            write_csv(test_set, VECTORIZED_TEST_CSV_PATH)
+        write_csv(train_set, VECTORIZED_TRAIN_CSV_PATH)
+        write_csv(test_set, VECTORIZED_TEST_CSV_PATH)
 
-            # Get the vectorized data, to prepare it for classification:
-            df = pd.read_csv(VECTORIZED_TRAIN_CSV_PATH)
+        # Get the vectorized data, to prepare it for classification:
+        df = pd.read_csv(VECTORIZED_TRAIN_CSV_PATH)
 
-            X_train = np.array(df.drop(['category', 'id'], 1))
-            y_train = np.array(df['category'])
+        X_train = np.array(df.drop(['category', 'id'], 1))
+        y_train = np.array(df['category'])
 
-            df = pd.read_csv(VECTORIZED_TEST_CSV_PATH)
+        df = pd.read_csv(VECTORIZED_TEST_CSV_PATH)
 
-            X_test = np.array(df.drop(['category', 'id'], 1))
-            y_test = np.array(df['category'])
-            id_test = np.array(df['id'])
+        X_test = np.array(df.drop(['category', 'id'], 1))
+        y_test = np.array(df['category'])
+        id_test = np.array(df['id'])
 
-            classifier = train_classifier(X_train, y_train)
+        classifier = train_classifier(X_train, y_train)
 
-            predict_list = X_test.reshape(len(X_test), -1)
-            category_list = y_test
-            predictions_num = classifier.predict(predict_list)
+        predict_list = X_test.reshape(len(X_test), -1)
+        category_list = y_test
+        predictions_num = classifier.predict(predict_list)
 
-            for i in range(len(predictions_num)):
-                context['prediction'].append({
-                    'id': id_test[i],
-                    'system_category': CATEGORIES[str(predictions_num[i])]
-                })
+        for i in range(len(predictions_num)):
+            context['prediction'].append({
+                'id': id_test[i],
+                'system_category': CATEGORIES[str(predictions_num[i])]
+            })
 
     return render(request, 'multicategorizer.html', context)
 

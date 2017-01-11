@@ -42,7 +42,7 @@
                 <p>Enter a complaint.</p>
             </div>
 
-            <form action="/multicategorizer/" method="post" enctype="multipart/form-data">
+            <form action="/multicategorizer/" name="form" method="post" enctype="multipart/form-data">
              <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
 			       <input id="fileSelect" style="margin-bottom: 20px" name="csvfile" type="file" accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" />  
 

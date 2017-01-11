@@ -133,11 +133,11 @@
     <th>Correct?</th>
   </tr>
   {% for preds in prediction %}
-	{% if preds['correct'] == 'Yes' %}
-		<tr style="color: #00af00;">
-	{% else %}
-		<tr style="color: red;">
-	{% endif %}
+      {% if preds['correct'] == 'Yes' %}
+        <tr style="color: #00af00;">
+      {% else %}
+        <tr style="color: red;">
+      {% endif %}
     <td>{{ preds['id'] }}</td>
     <td>{{ preds['system_category'] }}</td>
     <td>{{ preds['actual_category'] }}</td>
