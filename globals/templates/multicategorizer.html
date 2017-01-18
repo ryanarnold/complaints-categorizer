@@ -61,10 +61,12 @@
   <tr>
     <th>Complaint ID</th>
     <th>System Category</th>
+    <th>System Subcategory</th>
   </tr>
   {% for preds in prediction %}
     <td>{{ preds['id'] }}</td>
     <td>{{ preds['system_category'] }}</td>
+    <td>{{ preds['system_subcategory'] }}</td>
   </tr>
   {% endfor %}
 </table>
