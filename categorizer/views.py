@@ -267,6 +267,7 @@ def multicategorizer(request):
         for i in range(len(predictions_num)):
             context['prediction'].append({
                 'id': test_id[i],
+                'body': inputcomplaints[i]['body'],
                 'system_category': CATEGORIES[str(predictions_num[i])],
                 'system_subcategory': SUBCATEGORIES[str(predictions_subnum[i])]
             })
@@ -275,6 +276,8 @@ def multicategorizer(request):
         with open(filepath, 'w') as file:
             for c in context['prediction']:
                 file.write(c['id'])
+                file.write(',')
+                file.write(c['body'])
                 file.write(',')
                 file.write(c['system_category'])
                 file.write(',')
