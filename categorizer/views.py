@@ -302,44 +302,44 @@ def performance(request):
     context = {
         'accuracy': 0.0, 
         'prediction': [], 
-        'road_scores': {'TP': ''},
-        'hr_scores': {'TP': ''},
-        'flood_scores': {'TP': ''},
-        'commend_scores': {'TP': ''},
-        'bridge_scores': {'TP': ''},
+        'road_scores': {'TP': '','TN': '','FP': '','FN': '','p':'','r':'','F':'','acc':''},
+        'hr_scores': {'TP': '','TN': '','FP': '','FN': '','p':'','r':'','F':'','acc':''},
+        'flood_scores': {'TP': '','TN': '','FP': '','FN': '','p':'','r':'','F':'','acc':''},
+        'commend_scores': {'TP': '','TN': '','FP': '','FN': '','p':'','r':'','F':'','acc':''},
+        'bridge_scores': {'TP': '','TN': '','FP': '','FN': '','p':'','r':'','F':'','acc':''},
     }
 
     if request.method == 'POST':
-        complaints = load_raw(RAW_CSV_PATH)
+        # complaints = load_raw(RAW_CSV_PATH)
 
-        # Tokenization, Stopword Removal, and Stemming
-        i = 1
-        for complaint in complaints:
-            complaint['body'] = tokenize(complaint['body'])
-            #complaint['body'] = ner(complaint['body'])
-            complaint['body'] = remove_stopwords(complaint['body'])
-            complaint['body'] = stem(complaint['body'])
-            print('Finished complaint # ' + str(i))
-            i += 1
+        # # Tokenization, Stopword Removal, and Stemming
+        # i = 1
+        # for complaint in complaints:
+        #     complaint['body'] = tokenize(complaint['body'])
+        #     #complaint['body'] = ner(complaint['body'])
+        #     complaint['body'] = remove_stopwords(complaint['body'])
+        #     complaint['body'] = stem(complaint['body'])
+        #     print('Finished complaint # ' + str(i))
+        #     i += 1
 
-        # Partition into training set and test set
-        shuffle(complaints)
-        half_point = int(len(complaints) * 0.8)
-        train_set = complaints[:half_point]
-        test_set = complaints[half_point:]
-        write_json(train_set, PREPROCESSED_TRAIN_JSON_PATH)
-        write_json(test_set, PREPROCESSED_TEST_JSON_PATH)
+        # # Partition into training set and test set
+        # shuffle(complaints)
+        # half_point = int(len(complaints) * 0.8)
+        # train_set = complaints[:half_point]
+        # test_set = complaints[half_point:]
+        # write_json(train_set, PREPROCESSED_TRAIN_JSON_PATH)
+        # write_json(test_set, PREPROCESSED_TEST_JSON_PATH)
 
-        # Feature extraction (needed in vectorization)
-        features = extract_features(train_set, CATEGORIES.keys())
-        write_json(features, FEATURES_JSON_PATH)
+        # # Feature extraction (needed in vectorization)
+        # features = extract_features(train_set, CATEGORIES.keys())
+        # write_json(features, FEATURES_JSON_PATH)
 
-        # Vectorization
-        train_set, test_set = nb_vectorize(train_set, test_set, features, CATEGORIES.keys())
+        # # Vectorization
+        # train_set, test_set = nb_vectorize(train_set, test_set, features, CATEGORIES.keys())
 
-        # Put vectorized data in csv (sklearn reads from csv kasi)
-        write_csv(train_set, VECTORIZED_TRAIN_CSV_PATH)
-        write_csv(test_set, VECTORIZED_TEST_CSV_PATH)
+        # # Put vectorized data in csv (sklearn reads from csv kasi)
+        # write_csv(train_set, VECTORIZED_TRAIN_CSV_PATH)
+        # write_csv(test_set, VECTORIZED_TEST_CSV_PATH)
 
         # Get the vectorized data, to prepare it for classification:
         train_x = get_x(VECTORIZED_TRAIN_CSV_PATH)
