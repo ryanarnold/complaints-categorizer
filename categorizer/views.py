@@ -19,6 +19,8 @@ PREPROCESSED_TRAIN_JSON_PATH = 'globals/data/preprocessed_train.json'
 PREPROCESSED_TEST_JSON_PATH = 'globals/data/preprocessed_test.json'
 FEATURES_JSON_PATH = 'globals/data/features.json'
 
+do_preprocessing = False
+
 CATEGORIES = {
     '1': 'HR',
     '4': 'ROADS',
@@ -78,6 +80,7 @@ def categorizer(request):
         features = load_json(FEATURES_JSON_PATH)
 
         train_set = load_json(PREPROCESSED_TRAIN_JSON_PATH)
+        train_set = [train_set[0]]
         test_set = load_json(PREPROCESSED_TEST_JSON_PATH)
         test_set.append(complaint)
 
@@ -286,21 +289,6 @@ def multicategorizer(request):
 
     return render(request, 'multicategorizer.html', context)
 
-def categorized(request):
-    return render(request, 'categorized.html')
-
-def complaints(request):
-    return render(request, 'complaints.html')
-
-
-def adminpage(request):
-    return render(request, 'adminpage.html')
-
-
-def data(request):
-    return render(request, 'data.html')
-
-
 def performance(request):
     context = {
         'accuracy': 0.0, 
@@ -313,36 +301,37 @@ def performance(request):
     }
 
     if request.method == 'POST':
-        # complaints = load_raw(RAW_CSV_PATH)
+        if do_preprocessing:
+            complaints = load_raw(RAW_CSV_PATH)
 
-        # # Tokenization, Stopword Removal, and Stemming
-        # i = 1
-        # for complaint in complaints:
-        #     complaint['body'] = tokenize(complaint['body'])
-        #     #complaint['body'] = ner(complaint['body'])
-        #     complaint['body'] = remove_stopwords(complaint['body'])
-        #     complaint['body'] = stem(complaint['body'])
-        #     print('Finished complaint # ' + str(i))
-        #     i += 1
+            # Tokenization, Stopword Removal, and Stemming
+            i = 1
+            for complaint in complaints:
+                complaint['body'] = tokenize(complaint['body'])
+                #complaint['body'] = ner(complaint['body'])
+                complaint['body'] = remove_stopwords(complaint['body'])
+                complaint['body'] = stem(complaint['body'])
+                print('Finished complaint # ' + str(i))
+                i += 1
 
-        # # Partition into training set and test set
-        # shuffle(complaints)
-        # half_point = int(len(complaints) * 0.8)
-        # train_set = complaints[:half_point]
-        # test_set = complaints[half_point:]
-        # write_json(train_set, PREPROCESSED_TRAIN_JSON_PATH)
-        # write_json(test_set, PREPROCESSED_TEST_JSON_PATH)
+            # Partition into training set and test set
+            shuffle(complaints)
+            half_point = int(len(complaints) * 0.8)
+            train_set = complaints[:half_point]
+            test_set = complaints[half_point:]
+            write_json(train_set, PREPROCESSED_TRAIN_JSON_PATH)
+            write_json(test_set, PREPROCESSED_TEST_JSON_PATH)
 
-        # # Feature extraction (needed in vectorization)
-        # features = extract_features(train_set, CATEGORIES.keys())
-        # write_json(features, FEATURES_JSON_PATH)
+            # Feature extraction (needed in vectorization)
+            features = extract_features(train_set, CATEGORIES.keys())
+            write_json(features, FEATURES_JSON_PATH)
 
-        # # Vectorization
-        # train_set, test_set = nb_vectorize(train_set, test_set, features, CATEGORIES.keys())
+            # Vectorization
+            train_set, test_set = nb_vectorize(train_set, test_set, features, CATEGORIES.keys())
 
-        # # Put vectorized data in csv (sklearn reads from csv kasi)
-        # write_csv(train_set, VECTORIZED_TRAIN_CSV_PATH)
-        # write_csv(test_set, VECTORIZED_TEST_CSV_PATH)
+            # Put vectorized data in csv (sklearn reads from csv kasi)
+            write_csv(train_set, VECTORIZED_TRAIN_CSV_PATH)
+            write_csv(test_set, VECTORIZED_TEST_CSV_PATH)
 
         # Get the vectorized data, to prepare it for classification:
         train_x = get_x(VECTORIZED_TRAIN_CSV_PATH)
@@ -354,7 +343,7 @@ def performance(request):
 
         # Prepare output for template:
         accuracy = classifier.score(test_x, test_y)
-        context['accuracy'] = '{0:.4f}'.format(accuracy * 100)
+        # context['accuracy'] = '{0:.4f}'.format(accuracy * 100)
 
         predict_list = test_x.reshape(len(test_x), -1)
         category_list = test_y
@@ -365,6 +354,7 @@ def performance(request):
         context['bridge_scores'] = get_scores(category_list, predictions_num, 5)
         context['flood_scores'] = get_scores(category_list, predictions_num, 6)
         context['commend_scores'] = get_scores(category_list, predictions_num, 10)
+        context['accuracy'] = (context['hr_scores']['acc'] + context['road_scores']['acc'] + context['bridge_scores']['acc'] + context['flood_scores']['acc'] + context['commend_scores']['acc']) / 5
 
         for i in range(len(predictions_num)):
             correct = 'Yes' if predictions_num[i] == category_list[i] else 'No'
@@ -501,5 +491,17 @@ def traditional(request):
 
     return render(request, 'traditional.html', context)
 
-def generate_report(request):
-    pass
+# def generate_report(request):
+#     pass
+
+# def categorized(request):
+#     return render(request, 'categorized.html')
+
+# def complaints(request):
+#     return render(request, 'complaints.html')
+
+# def adminpage(request):
+#     return render(request, 'adminpage.html')
+
+def data(request):
+    return render(request, 'data.html')

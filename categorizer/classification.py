@@ -48,6 +48,6 @@ def get_scores(actual, predicted, category):
     F = '{0:.2f}'.format((precision * recall) / (precision + recall))
     precision = '{0:.2f}'.format(precision)
     recall = '{0:.2f}'.format(recall)
-    accuracy = '{0:.2f}'.format((TP + TN) / (TP + FP + TN + FN))
+    accuracy = float('{0:.2f}'.format((TP + TN) / (TP + FP + TN + FN)))
 
     return {'TP': TP, 'TN': TN, 'FP': FP, 'FN': FN, 'p': precision, 'r': recall, 'F': F, 'acc': accuracy}
