@@ -13,7 +13,7 @@ def DF(vocab, complaints):
     for term in vocab:
         term_DF[term] = sum([1 for complaint in complaints if term in complaint['body']])
 
-    threshold = 4
+    threshold = 3
     features = [term for term in term_DF.keys() if term_DF[term] > threshold]
 
     return features
