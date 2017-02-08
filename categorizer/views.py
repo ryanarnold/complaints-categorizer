@@ -15,6 +15,8 @@ RAW_CSV_PATH = 'globals/data/raw.csv'
 LOAD_PATH = 'globals/data/'
 VECTORIZED_TRAIN_CSV_PATH = 'globals/data/vectorized_train.csv'
 VECTORIZED_TEST_CSV_PATH = 'globals/data/vectorized_test.csv'
+VECTORIZED_TRAIN_INPUT_CSV_PATH = 'globals/data/vectorized_train_input.csv'
+VECTORIZED_TEST_INPUT_CSV_PATH = 'globals/data/vectorized_test_input.csv'
 PREPROCESSED_TRAIN_JSON_PATH = 'globals/data/preprocessed_train.json'
 PREPROCESSED_TEST_JSON_PATH = 'globals/data/preprocessed_test.json'
 FEATURES_JSON_PATH = 'globals/data/features.json'
@@ -80,22 +82,21 @@ def categorizer(request):
         features = load_json(FEATURES_JSON_PATH)
 
         train_set = load_json(PREPROCESSED_TRAIN_JSON_PATH)
-        train_set = [train_set[0]]
         test_set = load_json(PREPROCESSED_TEST_JSON_PATH)
         test_set.append(complaint)
 
         train_set, test_set = nb_vectorize(train_set, test_set, features, CATEGORIES.keys())
 
-        write_csv(train_set, VECTORIZED_TRAIN_CSV_PATH)
-        write_csv(test_set, VECTORIZED_TEST_CSV_PATH)
+        write_csv(train_set, VECTORIZED_TRAIN_INPUT_CSV_PATH)
+        write_csv(test_set, VECTORIZED_TEST_INPUT_CSV_PATH)
 
         # Get the vectorized data, to prepare it for classification:
-        df = pd.read_csv(VECTORIZED_TRAIN_CSV_PATH)
+        df = pd.read_csv(VECTORIZED_TRAIN_INPUT_CSV_PATH)
 
         X_train = np.array(df.drop(['category', 'id'], 1))
         y_train = np.array(df['category'])
 
-        df = pd.read_csv(VECTORIZED_TEST_CSV_PATH)
+        df = pd.read_csv(VECTORIZED_TEST_INPUT_CSV_PATH)
 
         X_test = np.array(df.drop(['category', 'id'], 1))
         y_test = np.array(df['category'])
