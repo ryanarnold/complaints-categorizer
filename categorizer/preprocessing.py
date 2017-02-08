@@ -281,3 +281,11 @@ def find_closest_word(word):
             best_words.append(w)
 
     return best_words
+
+def preprocess_bulk(complaints):
+    for complaint in complaints:
+        complaint['body'] = tokenize(complaint['body'])
+        complaint['body'] = remove_stopwords(complaint['body'])
+        complaint['body'] = stem(complaint['body'])
+
+    return complaints

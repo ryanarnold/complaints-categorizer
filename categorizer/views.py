@@ -12,6 +12,9 @@ from categorizer.forms import *
 from categorizer.models import *
 
 RAW_CSV_PATH = 'globals/data/raw.csv'
+RAW_TRAIN_JSON_PATH = 'globals/data/raw_train.json'
+RAW_DEVTEST_JSON_PATH = 'globals/data/raw_dev.json'
+RAW_EVALTEST_JSON_PATH = 'globals/data/raw_eval.json'
 LOAD_PATH = 'globals/data/'
 VECTORIZED_TRAIN_CSV_PATH = 'globals/data/vectorized_train.csv'
 VECTORIZED_TEST_CSV_PATH = 'globals/data/vectorized_test.csv'
@@ -21,7 +24,7 @@ PREPROCESSED_TRAIN_JSON_PATH = 'globals/data/preprocessed_train.json'
 PREPROCESSED_TEST_JSON_PATH = 'globals/data/preprocessed_test.json'
 FEATURES_JSON_PATH = 'globals/data/features.json'
 
-do_preprocessing = False
+do_preprocessing = True
 
 CATEGORIES = {
     '1': 'HR',
@@ -303,29 +306,24 @@ def performance(request):
 
     if request.method == 'POST':
         if do_preprocessing:
-            complaints = load_raw(RAW_CSV_PATH)
+            train_set = load_json(RAW_TRAIN_JSON_PATH)
+            test_set = load_json(RAW_EVALTEST_JSON_PATH)
 
-            # Tokenization, Stopword Removal, and Stemming
-            i = 1
-            for complaint in complaints:
-                complaint['body'] = tokenize(complaint['body'])
-                #complaint['body'] = ner(complaint['body'])
-                complaint['body'] = remove_stopwords(complaint['body'])
-                complaint['body'] = stem(complaint['body'])
-                print('Finished complaint # ' + str(i))
-                i += 1
+            train_set = preprocess_bulk(train_set)
+            test_set = preprocess_bulk(test_set)
 
             # Partition into training set and test set
-            shuffle(complaints)
-            half_point = int(len(complaints) * 0.8)
-            train_set = complaints[:half_point]
-            test_set = complaints[half_point:]
+            # shuffle(complaints)
+            # half_point = int(len(complaints) * 0.8)
+            # train_set = complaints[:half_point]
+            # test_set = complaints[half_point:]
             write_json(train_set, PREPROCESSED_TRAIN_JSON_PATH)
             write_json(test_set, PREPROCESSED_TEST_JSON_PATH)
 
             # Feature extraction (needed in vectorization)
-            features = extract_features(train_set, CATEGORIES.keys())
-            write_json(features, FEATURES_JSON_PATH)
+            # features = extract_features(train_set, CATEGORIES.keys())
+            # write_json(features, FEATURES_JSON_PATH)
+            features = load_json(FEATURES_JSON_PATH)
 
             # Vectorization
             train_set, test_set = nb_vectorize(train_set, test_set, features, CATEGORIES.keys())
@@ -344,7 +342,7 @@ def performance(request):
 
         # Prepare output for template:
         accuracy = classifier.score(test_x, test_y)
-        # context['accuracy'] = '{0:.4f}'.format(accuracy * 100)
+        context['accuracy'] = '{0:.4f}'.format(accuracy * 100)
 
         predict_list = test_x.reshape(len(test_x), -1)
         category_list = test_y
@@ -355,7 +353,7 @@ def performance(request):
         context['bridge_scores'] = get_scores(category_list, predictions_num, 5)
         context['flood_scores'] = get_scores(category_list, predictions_num, 6)
         context['commend_scores'] = get_scores(category_list, predictions_num, 10)
-        context['accuracy'] = (context['hr_scores']['acc'] + context['road_scores']['acc'] + context['bridge_scores']['acc'] + context['flood_scores']['acc'] + context['commend_scores']['acc']) / 5
+        # context['accuracy'] = (context['hr_scores']['acc'] + context['road_scores']['acc'] + context['bridge_scores']['acc'] + context['flood_scores']['acc'] + context['commend_scores']['acc']) / 5
 
         for i in range(len(predictions_num)):
             correct = 'Yes' if predictions_num[i] == category_list[i] else 'No'
