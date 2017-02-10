@@ -15,16 +15,24 @@ RAW_CSV_PATH = 'globals/data/raw.csv'
 RAW_TRAIN_JSON_PATH = 'globals/data/raw_train.json'
 RAW_DEVTEST_JSON_PATH = 'globals/data/raw_dev.json'
 RAW_EVALTEST_JSON_PATH = 'globals/data/raw_eval.json'
+RAW_SUB_TRAIN_JSON_PATH = 'globals/data/raw_sub_train.json'
+RAW_SUB_DEVTEST_JSON_PATH = 'globals/data/raw_sub_dev.json'
+RAW_SUB_EVALTEST_JSON_PATH = 'globals/data/raw_sub_eval.json'
 LOAD_PATH = 'globals/data/'
 VECTORIZED_TRAIN_CSV_PATH = 'globals/data/vectorized_train.csv'
 VECTORIZED_TEST_CSV_PATH = 'globals/data/vectorized_test.csv'
+VECTORIZED_SUB_TRAIN_CSV_PATH = 'globals/data/vectorized_sub_train.csv'
+VECTORIZED_SUB_TEST_CSV_PATH = 'globals/data/vectorized_sub_test.csv'
 VECTORIZED_TRAIN_INPUT_CSV_PATH = 'globals/data/vectorized_train_input.csv'
 VECTORIZED_TEST_INPUT_CSV_PATH = 'globals/data/vectorized_test_input.csv'
 PREPROCESSED_TRAIN_JSON_PATH = 'globals/data/preprocessed_train.json'
-PREPROCESSED_TEST_JSON_PATH = 'globals/data/preprocessed_test.json'
+PREPROCESSED_SUB_TEST_JSON_PATH = 'globals/data/preprocessed_test.json'
+PREPROCESSED_SUB_TRAIN_JSON_PATH = 'globals/data/preprocessed_sub_train.json'
+PREPROCESSED_TEST_JSON_PATH = 'globals/data/preprocessed_sub_test.json'
 FEATURES_JSON_PATH = 'globals/data/features.json'
+FEATURES_SUB_JSON_PATH = 'globals/data/features_sub.json'
 
-do_preprocessing = True
+do_preprocessing = False
 
 CATEGORIES = {
     '1': 'HR',
@@ -42,7 +50,7 @@ SUBCATEGORIES = {
     '6': 'ALLEGATION OF DEFECTIVE ROAD CONSTRUCTION',
     '7': 'ALLEGATION PF DELAYED ROAD CONSTRUCTION',
     '8': 'ROAD SAFETY',
-    '9': 'ROAD SIGNS',
+    # '9': 'ROAD SIGNS',
     '10': 'POOR ROAD CONDITION',
     '11': 'REQUEST FOR FUNDING',
     '13': 'POOR BRIDGE CONDITION',
@@ -51,12 +59,13 @@ SUBCATEGORIES = {
     '16': 'ALLEGATION OF DELAYED BRIDGE CONSTRUCTION',
     '21': 'CLOOGED DRAINAGE',
     '22': 'DEFECTIVE FLOOD CONTROL CONSTRUCTION',
-    '23': 'FLOOD CONTROL SAFETY',
+    # '23': 'FLOOD CONTROL SAFETY',
     '24': 'REQUEST FOR FUNDING',
     '25': 'DELAYED FLOOD CONTROL CONSTRUCTION',
     '26': 'APPLICATION',
     '27': 'REQUEST FOR FUNDING'
 }
+
 
 def index(request):
     return HttpResponseRedirect(reverse('home'))
@@ -127,89 +136,43 @@ def multicategorizer(request):
     complaintpath = ""
     saved = False
     if request.method == 'POST':
-        # fileform = JobFileSubmitForm(request.POST, request.FILES)
-        # print(fileform)
-        # if fileform.is_valid():
-        #     print('hey')
-        #     jfs = fileform.save(commit=True)
-        #     file = request.FILES['file']
-        #     jfs.file = file.name
-        #     jfs.uploadDate = datetime.now()
-        #     # Save to DB
-        #     jfs.save()
-            #complaints = load_raw(RAW_CSV_PATH)
         complaint = request.FILES['csvfile'].name
         complaintpath = LOAD_PATH + complaint
         print (complaint)
-        #reader = csv.DictReader(complaint)
         print (LOAD_PATH)
         print(complaint)
         print(complaintpath)
         inputcomplaints = load_multi(complaintpath)
-        #with open(complaintpath, 'r', encoding='utf-8') as file:
-        #    reader = csv.reader(file)
-       #     for row in reader:
-        #        complaints.append({
-        #            'id': row[0],
-        #            'body': row[1],
-        #            'category': row[3]
-        #        })
-        #path = complaint.temporary_file_path
-        #print (path)
 
-
-        #print (complaints)
         # Tokenization, Stopword Removal, and Stemming
-
-        complaints = load_raw(RAW_CSV_PATH)
-        i = 1
-        for complaint in complaints:
-            complaint['body'] = tokenize(complaint['body'])
-            #complaint['body'] = ner(complaint['body'])
-            complaint['body'] = remove_stopwords(complaint['body'])
-            complaint['body'] = stem(complaint['body'])
-            #print('Finished complaint # ' + str(i))
-            i += 1
-
-        for complaint in inputcomplaints:
-            complaint['body'] = tokenize(complaint['body'])
-            #complaint['body'] = ner(complaint['body'])
-            complaint['body'] = remove_stopwords(complaint['body'])
-            complaint['body'] = stem(complaint['body'])
-            print('Finished complaint # ' + str(i))
-            i += 1
-
-        # Partition into training set and test set
-
-        shuffle(complaints)
-        half_point = int(len(complaints) * 0.8)
-        train_set = complaints[:half_point]
-        test_set = inputcomplaints
-        write_json(train_set, PREPROCESSED_TRAIN_JSON_PATH)
-        write_json(test_set, PREPROCESSED_TEST_JSON_PATH)
+        train_set = load_json(RAW_TRAIN_JSON_PATH)
+        train_set = preprocess_bulk(train_set)
+        print(inputcomplaints)
+        test_set = preprocess_bulk(inputcomplaints)
 
         # Feature extraction (needed in vectorization)
-        features = extract_features(train_set, CATEGORIES.keys())
-        write_json(features, FEATURES_JSON_PATH)
+        # features = extract_features(train_set, CATEGORIES.keys())
+        # write_json(features, FEATURES_JSON_PATH)
+        features = load_json(FEATURES_JSON_PATH)
 
         # Vectorization
         train_set, test_set = nb_vectorize(train_set, test_set, features, CATEGORIES.keys())
 
         # Put vectorized data in csv (sklearn reads from csv kasi)
-        write_csv(train_set, VECTORIZED_TRAIN_CSV_PATH)
-        write_csv(test_set, VECTORIZED_TEST_CSV_PATH)
+        write_csv(train_set, VECTORIZED_TRAIN_INPUT_CSV_PATH)
+        write_csv(test_set, VECTORIZED_TEST_INPUT_CSV_PATH)
 
         # Get the vectorized data, to prepare it for classification:
-        df = pd.read_csv(VECTORIZED_TRAIN_CSV_PATH)
+        df = pd.read_csv(VECTORIZED_TRAIN_INPUT_CSV_PATH)
 
         X_train = np.array(df.drop(['category', 'id'], 1))
         y_train = np.array(df['category'])
 
-        df = pd.read_csv(VECTORIZED_TEST_CSV_PATH)
+        df = pd.read_csv(VECTORIZED_TEST_INPUT_CSV_PATH)
 
         X_test = np.array(df.drop(['category', 'id'], 1))
         y_test = np.array(df['category'])
-        test_id = get_id(VECTORIZED_TEST_CSV_PATH)
+        test_id = get_id(VECTORIZED_TEST_INPUT_CSV_PATH)
         classifier = train_classifier(X_train, y_train)
 
 
@@ -220,44 +183,29 @@ def multicategorizer(request):
         predictions_num = classifier.predict(predict_list)
 
         # FOR SUBCATEGORY
-        complaints = load_raw1(RAW_CSV_PATH)
-
-        # Tokenization, Stopword Removal, and Stemming
-        i = 1
-        for complaint in complaints:
-            complaint['body'] = tokenize(complaint['body'])
-            #complaint['body'] = ner(complaint['body'])
-            complaint['body'] = remove_stopwords(complaint['body'])
-            complaint['body'] = stem(complaint['body'])
-            print('Finished complaint # ' + str(i))
-            i += 1
-
-        # Partition into training set and test set
-        shuffle(complaints)
-        half_point = int(len(complaints) * 0.8)
-        train_set = complaints[:half_point]
-        test_set = inputcomplaints
-        write_json(train_set, PREPROCESSED_TRAIN_JSON_PATH)
-        write_json(test_set, PREPROCESSED_TEST_JSON_PATH)
+        train_set = load_json(RAW_SUB_TRAIN_JSON_PATH)
+        train_set = preprocess_bulk(train_set)
+        inputcomplaints = load_multi(complaintpath)
+        test_set = preprocess_bulk(inputcomplaints)
+        inputcomplaints = load_multi(complaintpath)
 
         # Feature extraction (needed in vectorization)
-        features = extract_features(train_set, SUBCATEGORIES.keys())
-        write_json(features, FEATURES_JSON_PATH)
+        features = load_json(FEATURES_SUB_JSON_PATH)
 
         # Vectorization
         train_set, test_set = nb_vectorize(train_set, test_set, features, SUBCATEGORIES.keys())
 
         # Put vectorized data in csv (sklearn reads from csv kasi)
-        write_csv(train_set, VECTORIZED_TRAIN_CSV_PATH)
-        write_csv(test_set, VECTORIZED_TEST_CSV_PATH)
+        write_csv(train_set, VECTORIZED_TRAIN_INPUT_CSV_PATH)
+        write_csv(test_set, VECTORIZED_TEST_INPUT_CSV_PATH)
 
         # Get the vectorized data, to prepare it for classification:
-        df = pd.read_csv(VECTORIZED_TRAIN_CSV_PATH)
+        df = pd.read_csv(VECTORIZED_TRAIN_INPUT_CSV_PATH)
 
         X_train = np.array(df.drop(['category', 'id'], 1))
         y_train = np.array(df['category'])
 
-        df = pd.read_csv(VECTORIZED_TEST_CSV_PATH)
+        df = pd.read_csv(VECTORIZED_TEST_INPUT_CSV_PATH)
 
         X_test = np.array(df.drop(['category', 'id'], 1))
         y_test = np.array(df['category'])
@@ -284,11 +232,11 @@ def multicategorizer(request):
             for c in context['prediction']:
                 file.write(c['id'])
                 file.write(',')
-                file.write(c['body'])
+                file.write('"' + c['body'] + '"')
                 file.write(',')
-                file.write(c['system_category'])
+                file.write('"' + c['system_category'] + '"')
                 file.write(',')
-                file.write(c['system_subcategory'])
+                file.write('"' + c['system_subcategory'] + '"')
                 file.write('\n')
 
     return render(request, 'multicategorizer.html', context)
@@ -321,9 +269,9 @@ def performance(request):
             write_json(test_set, PREPROCESSED_TEST_JSON_PATH)
 
             # Feature extraction (needed in vectorization)
-            # features = extract_features(train_set, CATEGORIES.keys())
-            # write_json(features, FEATURES_JSON_PATH)
-            features = load_json(FEATURES_JSON_PATH)
+            features = extract_features(train_set, CATEGORIES.keys())
+            write_json(features, FEATURES_JSON_PATH)
+            # features = load_json(FEATURES_JSON_PATH)
 
             # Vectorization
             train_set, test_set = nb_vectorize(train_set, test_set, features, CATEGORIES.keys())
@@ -370,43 +318,33 @@ def subperformance(request):
     context = {'accuracy': 0.0, 'prediction': [], }
 
     if request.method == 'POST':
-        complaints = load_raw1(RAW_CSV_PATH)
+        if do_preprocessing:
+            train_set = load_json(RAW_SUB_TRAIN_JSON_PATH)
+            test_set = load_json(RAW_SUB_EVALTEST_JSON_PATH)
 
-        # Tokenization, Stopword Removal, and Stemming
-        i = 1
-        for complaint in complaints:
-            complaint['body'] = tokenize(complaint['body'])
-            #complaint['body'] = ner(complaint['body'])
-            complaint['body'] = remove_stopwords(complaint['body'])
-            complaint['body'] = stem(complaint['body'])
-            print('Finished complaint # ' + str(i))
-            i += 1
+            # Tokenization, Stopword Removal, and Stemming
+            train_set = preprocess_bulk(train_set)
+            test_set = preprocess_bulk(test_set)
+            write_json(train_set, PREPROCESSED_SUB_TRAIN_JSON_PATH)
+            write_json(test_set, PREPROCESSED_SUB_TEST_JSON_PATH)
 
-        # Partition into training set and test set
-        shuffle(complaints)
-        half_point = int(len(complaints) * 0.8)
-        train_set = complaints[:half_point]
-        test_set = complaints[half_point:]
-        write_json(train_set, PREPROCESSED_TRAIN_JSON_PATH)
-        write_json(test_set, PREPROCESSED_TEST_JSON_PATH)
+            # Feature extraction (needed in vectorization)
+            features = extract_features(train_set, SUBCATEGORIES.keys())
+            write_json(features, FEATURES_SUB_JSON_PATH)
 
-        # Feature extraction (needed in vectorization)
-        features = extract_features(train_set, SUBCATEGORIES.keys())
-        write_json(features, FEATURES_JSON_PATH)
+            # Vectorization
+            train_set, test_set = nb_vectorize(train_set, test_set, features, SUBCATEGORIES.keys())
 
-        # Vectorization
-        train_set, test_set = nb_vectorize(train_set, test_set, features, SUBCATEGORIES.keys())
-
-        # Put vectorized data in csv (sklearn reads from csv kasi)
-        write_csv(train_set, VECTORIZED_TRAIN_CSV_PATH)
-        write_csv(test_set, VECTORIZED_TEST_CSV_PATH)
+            # Put vectorized data in csv (sklearn reads from csv kasi)
+            write_csv(train_set, VECTORIZED_SUB_TRAIN_CSV_PATH)
+            write_csv(test_set, VECTORIZED_SUB_TEST_CSV_PATH)
 
         # Get the vectorized data, to prepare it for classification:
-        train_x = get_x(VECTORIZED_TRAIN_CSV_PATH)
-        train_y = get_y(VECTORIZED_TRAIN_CSV_PATH)
-        test_x = get_x(VECTORIZED_TEST_CSV_PATH)
-        test_y = get_y(VECTORIZED_TEST_CSV_PATH)
-        test_id = get_id(VECTORIZED_TEST_CSV_PATH)
+        train_x = get_x(VECTORIZED_SUB_TRAIN_CSV_PATH)
+        train_y = get_y(VECTORIZED_SUB_TRAIN_CSV_PATH)
+        test_x = get_x(VECTORIZED_SUB_TEST_CSV_PATH)
+        test_y = get_y(VECTORIZED_SUB_TEST_CSV_PATH)
+        test_id = get_id(VECTORIZED_SUB_TEST_CSV_PATH)
         classifier = train_classifier(train_x, train_y)
 
         # Prepare output for template:

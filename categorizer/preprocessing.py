@@ -17,12 +17,12 @@ punctuations = ['.', ':', ',', ';', '\'', '``', '\'\'', '(', ')', '•', '%',
 punc = re.compile(r'[^a-zA-Z0-9]')
 
 # Stopwords corpus
-stopwords = stopwords_corpus.words('english')
-stopwords.append('said')
+with open('globals/data/stopwords.json', 'r') as file:
+    stopwords = set(json.load(file))
 
 # Vocabulary of all English words
-english = set(brown.words())
-english.update(set(reuters.words()))
+with open('globals/data/english.json', 'r') as file:
+    english = set(json.load(file))
 
 # Vocabulary of all Tagalog words
 with open('globals/data/tagalog.json', 'r') as file:
@@ -89,6 +89,7 @@ def load_multi(filepath):
     return complaints
 
 def tokenize(text):
+    text = text.replace('Presidential intercession with Code No', '')
     tokens = []
     for token in word_tokenize(text):
         token = token.lower().replace('\'', '').replace('“', '').replace('’', '')
@@ -232,14 +233,28 @@ def nb_vectorize(train_set, test_set, features, categories):
         vector = {}
 
         for category in categories:
+            n = 0
             prob = float()            
             for word in complaint['body']:
                 if word in word_prob.keys():
                     prob += word_prob[word][category]
-            n = len(complaint['body'])
-            vector[category] = prob / n
+                    if word_prob[word][category] == 1:
+                        prob = 1
+                        n = 1
+                        break
+                    n += 1
+                    if complaint['id'] == 'CFMC-20142336':
+                        print(category + ' : ' + word, end='              ')
+                        print('{0:.4f}'.format(word_prob[word][category]))
+            try:
+                vector[category] = prob / n
+            except ZeroDivisionError:
+                vector[category] = 0
 
         vectorized_test_set.append({'vector': vector, 'category': complaint['category'], 'id': complaint['id']})
+        if complaint['id'] == 'CFMC-20142336':
+            print(vector)
+            input()
 
     return vectorized_train_set, vectorized_test_set
 

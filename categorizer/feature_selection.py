@@ -44,6 +44,13 @@ def chi_square(vocab, complaints, categories):
                 chi_table[term][category]['chi'] = (N * ((A * D) - (C * B))**2) / ((A + C) * (B + D) * (A + B) * (C + D))
                 chi_table[term][category]['freq'] = A + C
             except ZeroDivisionError:
+                print(term)
+                print(category)
+                print(A)
+                print(B)
+                print(C)
+                print(D)
+                input()
                 pass
         chi_table[term]['chi_average'] = float()
         for category in categories:
