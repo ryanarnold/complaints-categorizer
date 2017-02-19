@@ -91,6 +91,7 @@ def load_multi(filepath):
 def tokenize(text):
     text = text.replace('Presidential intercession with Code No', '')
     text = text.replace('relative to the letter of', '')
+    text = text.replace('This pertains to', '')
     tokens = []
     for token in word_tokenize(text):
         token = token.lower().replace('\'', '').replace('“', '').replace('’', '')
@@ -255,9 +256,9 @@ def nb_vectorize(train_set, test_set, features, categories):
                 vector[category] = 0
 
         vectorized_test_set.append({'vector': vector, 'category': complaint['category'], 'id': complaint['id']})
-        if complaint['id'] == 'CFMC-20150223':
-            print(vector)
-            input()
+        # if complaint['id'] == 'CFMC-20150223':
+        #     print(vector)
+        #     input()
 
     return vectorized_train_set, vectorized_test_set
 

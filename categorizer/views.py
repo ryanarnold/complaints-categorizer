@@ -49,12 +49,12 @@ SUBCATEGORIES = {
     '5': 'CLAIMS OF BENEFITS',
     '6': 'ALLEGATION OF DEFECTIVE ROAD CONSTRUCTION',
     '7': 'ALLEGATION OF DELAYED ROAD CONSTRUCTION',
-    '8': 'ROAD SAFETY',
+    # '8': 'ROAD SAFETY',
     # '9': 'ROAD SIGNS',
-    '10': 'POOR ROAD CONDITION',
+    # '10': 'POOR ROAD CONDITION',
     '11': 'REQUEST FOR FUNDING',
-    '13': 'POOR BRIDGE CONDITION',
-    '14': 'BRIDGE SAFETY',
+    # '13': 'POOR BRIDGE CONDITION',
+    # '14': 'BRIDGE SAFETY',
     '15': 'ALLEGATION OF DEFECTIVE BRIDGE CONSTRUCTION',
     '16': 'ALLEGATION OF DELAYED BRIDGE CONSTRUCTION',
     '21': 'CLOOGED DRAINAGE',
@@ -68,8 +68,8 @@ SUBCATEGORIES = {
 
 CATEGORY_CHILDREN = {
     '1': ['1', '2', '3', '5', '26'],
-    '4': ['6', '7', '8', '10', '11'],
-    '5': ['13', '14', '15', '16', '27'],
+    '4': ['6', '7', '11'],
+    '5': ['15', '16', '27'],
     '6': ['21', '22', '24', '25']
 }
 
@@ -327,7 +327,7 @@ def subperformance(request):
     if request.method == 'POST':
         classifiers = {}
         bad_complaints = []
-        for category in CATEGORIES.keys():
+        for category in ['1', '4', '5', '6']:
             if category == '10':
                 continue
             if do_preprocessing:
@@ -349,6 +349,30 @@ def subperformance(request):
                 # Feature extraction (needed in vectorization)
                 print(CATEGORIES[category])
                 features = extract_features(train_set, CATEGORY_CHILDREN[category])
+                if category == '1':
+                    features += [
+                        'salari', 'qualif', 'bachelor', 'resum', 'benefit', 'hire', 'hr', 'interview'
+                        'laud', 'cum', 'graduat', 'employ', 'payment', 'incent', 'delay', 'wage',
+                        'anomal', 'corrupt', 'bribe', 'abus', 'author', 'dalian', 'pay', 'oper',
+                        'univers', 'director', 'complaint'
+                    ]
+                elif category == '4':
+                    features += [
+                        'finish', 'slow', 'pace', 'long', 'forsaken', 'unfinish', 'still',
+                        'safeti', 'hasten', 'request', 'construct', 'limit', 'action', 'pend',
+                        'torment', 'year', 'danger', 'propos', 'contractor', 'poor', 'shoddi',
+                        'dark', 'go', 'repair', 'recent', 'sever', 'broken', 'problem', 'lack',
+                        'complet', 'almost', 'traffic', 'post', 'loss', 'useless', 'flood'
+                    ]
+                elif category == '5':
+                    features += [
+                        'updat', 'hazard', 'finish', 'durat', 'start', 'construct', 'without',
+                        'properti', 'statu', 'propos'
+                    ]
+                elif category == '6':
+                    features += [
+                        'shallow', 
+                    ]
                 write_json(features, FEATURES_SUB_JSON_PATH)
 
                 # Vectorization
@@ -376,6 +400,11 @@ def subperformance(request):
                 c for c in load_json(RAW_SUB_EVALTEST_JSON_PATH)
                 if c['category'] in CATEGORY_CHILDREN[category]
             ]
+            test_set = preprocess_bulk(list(raw_test_set))
+            raw_test_set = [
+                c for c in load_json(RAW_SUB_EVALTEST_JSON_PATH)
+                if c['category'] in CATEGORY_CHILDREN[category]
+            ]
             for i in range(len(predictions_num)):
                 if predictions_num[i] != category_list[i]:
                     bad_complaint = {}
@@ -383,7 +412,8 @@ def subperformance(request):
                     bad_complaint['actual'] = SUBCATEGORIES[str(category_list[i])]
                     bad_complaint['predicted'] = SUBCATEGORIES[str(predictions_num[i])]
                     bad_complaint['body'] = find_complaint(test_id[i], raw_test_set)['body']
-                    bad_complaint['vector'] = list(predict_list[i])
+                    bad_complaint['tokens'] = test_set[i]['body']
+                    # bad_complaint['vector'] = list(predict_list[i])
                     bad_complaints.append(bad_complaint)
 
             # for f in features:
