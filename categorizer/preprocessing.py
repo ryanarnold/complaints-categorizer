@@ -90,6 +90,7 @@ def load_multi(filepath):
 
 def tokenize(text):
     text = text.replace('Presidential intercession with Code No', '')
+    text = text.replace('relative to the letter of', '')
     tokens = []
     for token in word_tokenize(text):
         token = token.lower().replace('\'', '').replace('“', '').replace('’', '')
@@ -159,7 +160,9 @@ def extract_features(complaints, categories):
         text += complaint['body']
     vocab = set(text)
     initial_features = DF(vocab, complaints)    # eliminates too infrequent terms
+    print(initial_features)
     informative_features = chi_square(initial_features, complaints, categories)
+    print(informative_features)
 
     return informative_features
 
@@ -243,16 +246,16 @@ def nb_vectorize(train_set, test_set, features, categories):
                         n = 1
                         break
                     n += 1
-                    if complaint['id'] == 'CFMC-20142336':
-                        print(category + ' : ' + word, end='              ')
-                        print('{0:.4f}'.format(word_prob[word][category]))
+                    # if complaint['id'] == 'CFMC-20150223':
+                    #     print(category + ' : ' + word, end='              ')
+                    #     print('{0:.4f}'.format(word_prob[word][category]))
             try:
                 vector[category] = prob / n
             except ZeroDivisionError:
                 vector[category] = 0
 
         vectorized_test_set.append({'vector': vector, 'category': complaint['category'], 'id': complaint['id']})
-        if complaint['id'] == 'CFMC-20142336':
+        if complaint['id'] == 'CFMC-20150223':
             print(vector)
             input()
 
@@ -304,3 +307,8 @@ def preprocess_bulk(complaints):
         complaint['body'] = stem(complaint['body'])
 
     return complaints
+
+def find_complaint(complaint_id, complaints_list):
+    for c in complaints_list:
+        if c['id'] == complaint_id:
+            return c

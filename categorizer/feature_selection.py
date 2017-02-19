@@ -56,7 +56,7 @@ def chi_square(vocab, complaints, categories):
         for category in categories:
             P = chi_table[term][category]['freq'] / N
             chi_table[term]['chi_average'] += P * chi_table[term][category]['chi']
-        if chi_table[term]['chi_average'] > 5:
+        if chi_table[term]['chi_average'] > 3:
             features.append(term)
 
     print('Extracted {0} features'.format(len(features)))

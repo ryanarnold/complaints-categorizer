@@ -32,7 +32,7 @@ PREPROCESSED_TEST_JSON_PATH = 'globals/data/preprocessed_sub_test.json'
 FEATURES_JSON_PATH = 'globals/data/features.json'
 FEATURES_SUB_JSON_PATH = 'globals/data/features_sub.json'
 
-do_preprocessing = False
+do_preprocessing = True
 
 CATEGORIES = {
     '1': 'HR',
@@ -48,7 +48,7 @@ SUBCATEGORIES = {
     '3': 'ALLEGATION OF MISBEHAVIOR/MALFEASANCE',
     '5': 'CLAIMS OF BENEFITS',
     '6': 'ALLEGATION OF DEFECTIVE ROAD CONSTRUCTION',
-    '7': 'ALLEGATION PF DELAYED ROAD CONSTRUCTION',
+    '7': 'ALLEGATION OF DELAYED ROAD CONSTRUCTION',
     '8': 'ROAD SAFETY',
     # '9': 'ROAD SIGNS',
     '10': 'POOR ROAD CONDITION',
@@ -64,6 +64,13 @@ SUBCATEGORIES = {
     '25': 'DELAYED FLOOD CONTROL CONSTRUCTION',
     '26': 'APPLICATION',
     '27': 'REQUEST FOR FUNDING'
+}
+
+CATEGORY_CHILDREN = {
+    '1': ['1', '2', '3', '5', '26'],
+    '4': ['6', '7', '8', '10', '11'],
+    '5': ['13', '14', '15', '16', '27'],
+    '6': ['21', '22', '24', '25']
 }
 
 
@@ -315,54 +322,86 @@ def performance(request):
     return render(request, 'performance.html', context)
 
 def subperformance(request):
-    context = {'accuracy': 0.0, 'prediction': [], }
+    context = {'accuracy': {'1': 0.0, '4': 0.0, '5': 0.0, '6': 0.0}, 'prediction': [], 'ave_acc': 0.0}
 
     if request.method == 'POST':
-        if do_preprocessing:
-            train_set = load_json(RAW_SUB_TRAIN_JSON_PATH)
-            test_set = load_json(RAW_SUB_EVALTEST_JSON_PATH)
+        classifiers = {}
+        bad_complaints = []
+        for category in CATEGORIES.keys():
+            if category == '10':
+                continue
+            if do_preprocessing:
+                raw_train_set = [
+                    c for c in load_json(RAW_SUB_TRAIN_JSON_PATH)
+                    if c['category'] in CATEGORY_CHILDREN[category]
+                ]
+                raw_test_set = [
+                    c for c in load_json(RAW_SUB_EVALTEST_JSON_PATH)
+                    if c['category'] in CATEGORY_CHILDREN[category]
+                ]
 
-            # Tokenization, Stopword Removal, and Stemming
-            train_set = preprocess_bulk(train_set)
-            test_set = preprocess_bulk(test_set)
-            write_json(train_set, PREPROCESSED_SUB_TRAIN_JSON_PATH)
-            write_json(test_set, PREPROCESSED_SUB_TEST_JSON_PATH)
+                # Tokenization, Stopword Removal, and Stemming
+                train_set = preprocess_bulk(list(raw_train_set))
+                test_set = preprocess_bulk(list(raw_test_set))
+                write_json(train_set, PREPROCESSED_SUB_TRAIN_JSON_PATH)
+                write_json(test_set, PREPROCESSED_SUB_TEST_JSON_PATH)
 
-            # Feature extraction (needed in vectorization)
-            features = extract_features(train_set, SUBCATEGORIES.keys())
-            write_json(features, FEATURES_SUB_JSON_PATH)
+                # Feature extraction (needed in vectorization)
+                print(CATEGORIES[category])
+                features = extract_features(train_set, CATEGORY_CHILDREN[category])
+                write_json(features, FEATURES_SUB_JSON_PATH)
 
-            # Vectorization
-            train_set, test_set = nb_vectorize(train_set, test_set, features, SUBCATEGORIES.keys())
+                # Vectorization
+                train_set, test_set = nb_vectorize(train_set, test_set, features, CATEGORY_CHILDREN[category])
 
-            # Put vectorized data in csv (sklearn reads from csv kasi)
-            write_csv(train_set, VECTORIZED_SUB_TRAIN_CSV_PATH)
-            write_csv(test_set, VECTORIZED_SUB_TEST_CSV_PATH)
+                # Put vectorized data in csv (sklearn reads from csv kasi)
+                write_csv(train_set, VECTORIZED_SUB_TRAIN_CSV_PATH)
+                write_csv(test_set, VECTORIZED_SUB_TEST_CSV_PATH)
 
-        # Get the vectorized data, to prepare it for classification:
-        train_x = get_x(VECTORIZED_SUB_TRAIN_CSV_PATH)
-        train_y = get_y(VECTORIZED_SUB_TRAIN_CSV_PATH)
-        test_x = get_x(VECTORIZED_SUB_TEST_CSV_PATH)
-        test_y = get_y(VECTORIZED_SUB_TEST_CSV_PATH)
-        test_id = get_id(VECTORIZED_SUB_TEST_CSV_PATH)
-        classifier = train_classifier(train_x, train_y)
+            # Get the vectorized data, to prepare it for classification:
+            train_x = get_x(VECTORIZED_SUB_TRAIN_CSV_PATH)
+            train_y = get_y(VECTORIZED_SUB_TRAIN_CSV_PATH)
+            test_x = get_x(VECTORIZED_SUB_TEST_CSV_PATH)
+            test_y = get_y(VECTORIZED_SUB_TEST_CSV_PATH)
+            test_id = get_id(VECTORIZED_SUB_TEST_CSV_PATH)
+            classifiers[category] = train_classifier(train_x, train_y)
+            context['accuracy'][category] = '{0:0.4f}'.format(classifiers[category].score(test_x, test_y))
+            context['ave_acc'] += classifiers[category].score(test_x, test_y)
 
-        # Prepare output for template:
-        accuracy = classifier.score(test_x, test_y)
-        context['accuracy'] = '{0:.4f}'.format(accuracy * 100)
+            predict_list = test_x.reshape(len(test_x), -1)
+            category_list = test_y
+            predictions_num = classifiers[category].predict(predict_list)
 
-        predict_list = test_x.reshape(len(test_x), -1)
-        category_list = test_y
-        predictions_num = classifier.predict(predict_list)
+            raw_test_set = [
+                c for c in load_json(RAW_SUB_EVALTEST_JSON_PATH)
+                if c['category'] in CATEGORY_CHILDREN[category]
+            ]
+            for i in range(len(predictions_num)):
+                if predictions_num[i] != category_list[i]:
+                    bad_complaint = {}
+                    bad_complaint['id'] = test_id[i]
+                    bad_complaint['actual'] = SUBCATEGORIES[str(category_list[i])]
+                    bad_complaint['predicted'] = SUBCATEGORIES[str(predictions_num[i])]
+                    bad_complaint['body'] = find_complaint(test_id[i], raw_test_set)['body']
+                    bad_complaint['vector'] = list(predict_list[i])
+                    bad_complaints.append(bad_complaint)
 
-        for i in range(len(predictions_num)):
-            correct = 'Yes' if predictions_num[i] == category_list[i] else 'No'
-            context['prediction'].append({
-                'id': test_id[i],
-                'system_category': SUBCATEGORIES[str(predictions_num[i])],
-                'actual_category': SUBCATEGORIES[str(category_list[i])],
-                'correct': correct
-            })
+            # for f in features:
+            #     print(f, end=', ')
+            # print(category)
+            # input()
+
+            # for i in range(len(predictions_num)):
+            #     correct = 'Yes' if predictions_num[i] == category_list[i] else 'No'
+            #     context['prediction'].append({
+            #         'id': test_id[i],
+            #         'system_category': SUBCATEGORIES[str(predictions_num[i])],
+            #         'actual_category': SUBCATEGORIES[str(category_list[i])],
+            #         'correct': correct
+            #     })
+        write_json(bad_complaints, 'bad_complaints.json')
+        context['ave_acc'] /= 4
+        context['ave_acc'] = '{0:.4f}'.format(context['ave_acc'])
 
     return render(request, 'subperformance.html', context)
 

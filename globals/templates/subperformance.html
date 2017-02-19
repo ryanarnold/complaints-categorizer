@@ -15,7 +15,7 @@
 						
                         <form method="post">
                             <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
-                            <input type="submit" name="submit" value="Begin Training" class="btn btn-md btn-default">
+                            <input type="submit" name="submit" value="Begin Training" class="btn btn-md btn-default" autofocus>
                         </form>
 
                         <!-- <h3>Accuracy: {{ accuracy }}</h3> -->
@@ -43,18 +43,7 @@
     <td></td>
     <td></td>
     <td></td>
-    <td></td>
-  </tr>
-  <tr>
-    <td>Commendation</td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
+    <td>{{ accuracy['5'] }}</td>
   </tr>
   <tr>
     <td>Flood Control</td>
@@ -65,7 +54,7 @@
     <td></td>
     <td></td>
     <td></td>
-    <td></td>
+    <td>{{ accuracy['6'] }}</td>
   </tr>
   <tr>
     <td>HR</td>
@@ -76,18 +65,7 @@
     <td></td>
     <td></td>
     <td></td>
-    <td></td>
-  </tr>
-  <tr>
-    <td>Request for Info</td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
+    <td>{{ accuracy['1'] }}</td>
   </tr>
   <tr>
     <td>Roads</td>
@@ -98,7 +76,7 @@
     <td></td>
     <td></td>
     <td></td>
-    <td></td>
+    <td>{{ accuracy['4'] }}</td>
   </tr>
   <tr>
     <th>Average</th>
@@ -109,7 +87,7 @@
     <td style="background-color: #dddddd;" ></td>
     <td style="background-color: #dddddd;" ></td>
     <td style="background-color: #dddddd;" ></td>
-    <td>{{ accuracy }}</td>
+    <td>{{ ave_acc }}</td>
   </tr>
   <tr>
     <th>Macro-average</th>
