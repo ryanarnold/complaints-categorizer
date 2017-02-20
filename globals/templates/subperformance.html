@@ -41,14 +41,14 @@
                 {% for s in category_children[c] %}
                   <tr>
                     <td>{{ subcategories[s] }}</td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
+                    <td>{{ scores[s]['TP'] }}</td>
+                    <td>{{ scores[s]['FP'] }}</td>
+                    <td>{{ scores[s]['TN'] }}</td>
+                    <td>{{ scores[s]['FN'] }}</td>
+                    <td>{{ scores[s]['p'] }}</td>
+                    <td>{{ scores[s]['r'] }}</td>
+                    <td>{{ scores[s]['F'] }}</td>
+                    <td>{{ scores[s]['acc'] }}</td>
                   </tr>
                 {% endfor %}
                 <tr>

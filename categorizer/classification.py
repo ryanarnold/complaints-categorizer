@@ -36,6 +36,7 @@ def get_scores(actual, predicted, category):
     FP = 0
     for i in irrelevant_indexes:
         if predicted[i] == category:
+            print('./.')
             FP += 1
 
     FN = 0
@@ -43,11 +44,17 @@ def get_scores(actual, predicted, category):
         if predicted[i] != category:
             FN += 1
 
-    precision = TP / (TP + FP)
+    try:
+        precision = TP / (TP + FP)
+    except ZeroDivisionError:
+        precision = 0.0
     recall = TP / (TP + FN)
-    F = '{0:.2f}'.format((precision * recall) / (precision + recall))
-    precision = '{0:.2f}'.format(precision)
-    recall = '{0:.2f}'.format(recall)
-    accuracy = float('{0:.2f}'.format((TP + TN) / (TP + FP + TN + FN)))
+    try:
+        F = '{0:.4f}'.format((precision * recall) / (precision + recall))
+    except ZeroDivisionError:
+        F = '0.0'
+    precision = '{0:.4f}'.format(precision)
+    recall = '{0:.4f}'.format(recall)
+    accuracy = float('{0:.4f}'.format((TP + TN) / len(actual)))
 
     return {'TP': TP, 'TN': TN, 'FP': FP, 'FN': FN, 'p': precision, 'r': recall, 'F': F, 'acc': accuracy}

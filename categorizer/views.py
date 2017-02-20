@@ -43,7 +43,7 @@ CATEGORIES = {
 }
 
 SUBCATEGORIES = {
-    '1': 'EMPLOYMENT',
+    # '1': 'EMPLOYMENT',
     '2': 'PAYMENT OF SALARIES',
     '3': 'ALLEGATION OF MISBEHAVIOR/MALFEASANCE',
     '5': 'CLAIMS OF BENEFITS',
@@ -67,7 +67,7 @@ SUBCATEGORIES = {
 }
 
 CATEGORY_CHILDREN = {
-    '1': ['1', '2', '3', '5', '26'],
+    '1': ['2', '3', '5', '26'],
     '4': ['6', '7', '11'],
     '5': ['15', '16', '27'],
     '6': ['21', '22', '24', '25']
@@ -326,6 +326,11 @@ def subperformance(request):
     context['categories'] = CATEGORIES
     context['subcategories'] = SUBCATEGORIES
     context['category_children'] = CATEGORY_CHILDREN
+    context['scores'] = {}
+    for category in CATEGORY_CHILDREN.keys():
+        for s in CATEGORY_CHILDREN[category]:
+            context['scores'][s] = {}
+            context['scores'][s] = {'TP': 0.0, 'TN': 0.0, 'FP': 0.0, 'FN': 0.0, 'p': 0.0,'r': 0.0, 'F': 0.0, 'acc': 0.0}
 
     if request.method == 'POST':
         classifiers = {}
@@ -398,6 +403,9 @@ def subperformance(request):
             predict_list = test_x.reshape(len(test_x), -1)
             category_list = test_y
             predictions_num = classifiers[category].predict(predict_list)
+
+            for s in CATEGORY_CHILDREN[category]:
+                context['scores'][s] = get_scores(category_list, predictions_num, int(s))
 
             raw_test_set = [
                 c for c in load_json(RAW_SUB_EVALTEST_JSON_PATH)
