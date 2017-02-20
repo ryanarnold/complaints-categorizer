@@ -57,7 +57,7 @@ SUBCATEGORIES = {
     # '14': 'BRIDGE SAFETY',
     '15': 'ALLEGATION OF DEFECTIVE BRIDGE CONSTRUCTION',
     '16': 'ALLEGATION OF DELAYED BRIDGE CONSTRUCTION',
-    '21': 'CLOOGED DRAINAGE',
+    '21': 'CLOGGED DRAINAGE',
     '22': 'DEFECTIVE FLOOD CONTROL CONSTRUCTION',
     # '23': 'FLOOD CONTROL SAFETY',
     '24': 'REQUEST FOR FUNDING',
@@ -323,6 +323,9 @@ def performance(request):
 
 def subperformance(request):
     context = {'accuracy': {'1': 0.0, '4': 0.0, '5': 0.0, '6': 0.0}, 'prediction': [], 'ave_acc': 0.0}
+    context['categories'] = CATEGORIES
+    context['subcategories'] = SUBCATEGORIES
+    context['category_children'] = CATEGORY_CHILDREN
 
     if request.method == 'POST':
         classifiers = {}

@@ -22,96 +22,52 @@
 
 						
 						<br>
-<table>
-  <tr>
-    <th>Category</th>
-    <th>TP</th>
-    <th>FP</th>
-    <th>TN</th>
-    <th>FN</th>
-    <th>P</th>
-    <th>R</th>
-    <th>F1</th>
-    <th>Acc</th>
-  </tr>
-  <tr>
-    <td>Bridges</td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td>{{ accuracy['5'] }}</td>
-  </tr>
-  <tr>
-    <td>Flood Control</td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td>{{ accuracy['6'] }}</td>
-  </tr>
-  <tr>
-    <td>HR</td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td>{{ accuracy['1'] }}</td>
-  </tr>
-  <tr>
-    <td>Roads</td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td>{{ accuracy['4'] }}</td>
-  </tr>
-  <tr>
-    <th>Average</th>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td style="background-color: #dddddd;" ></td>
-    <td style="background-color: #dddddd;" ></td>
-    <td style="background-color: #dddddd;" ></td>
-    <td>{{ ave_acc }}</td>
-  </tr>
-  <tr>
-    <th>Macro-average</th>
-    <td style="background-color: #dddddd;" ></td>
-    <td style="background-color: #dddddd;" ></td>
-    <td style="background-color: #dddddd;" ></td>
-    <td style="background-color: #dddddd;" ></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td style="background-color: #dddddd;" ></td>
-  </tr>
-  <tr>
-    <th>Micro-average</th>
-    <td style="background-color: #dddddd;" ></td>
-    <td style="background-color: #dddddd;" ></td>
-    <td style="background-color: #dddddd;" ></td>
-    <td style="background-color: #dddddd;" ></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td style="background-color: #dddddd;" ></td>
-  </tr>
-</table>
+
+            {% for c in category_children %}
+              <h5>{{ categories[c] }} Subcategories </h5>
+
+              <table>
+                <tr>
+                  <th>Subcategory</th>
+                  <th>TP</th>
+                  <th>FP</th>
+                  <th>TN</th>
+                  <th>FN</th>
+                  <th>P</th>
+                  <th>R</th>
+                  <th>F1</th>
+                  <th>Acc</th>
+                </tr>
+                {% for s in category_children[c] %}
+                  <tr>
+                    <td>{{ subcategories[s] }}</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                  </tr>
+                {% endfor %}
+                <tr>
+                  <td>Average</td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td>{{ accuracy[c] }}</td>
+                </tr>
+              </table>
+            {% endfor %}
+
+            
+
+
 
 <br> <br> 
 <table>
