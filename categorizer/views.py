@@ -144,52 +144,33 @@ def multicategorizer(request):
         # Prepare output for template:
 
         predict_list = X_test.reshape(len(X_test), -1)
-        category_list = y_test
         predictions_num = classifier.predict(predict_list)
+        predictions_subnum = []
 
         # FOR SUBCATEGORY
-        train_set = load_json(RAW_SUB_TRAIN_JSON_PATH)
-        train_set = preprocess_bulk(train_set)
         inputcomplaints = load_multi(complaintpath)
-        test_set = preprocess_bulk(inputcomplaints)
-        inputcomplaints = load_multi(complaintpath)
+        for i in range(len(predictions_num)):
+            if str(predictions_num[i]) == '10':
+                predictions_subnum.append(99)
+                continue
+            preprocess_subcategory(str(predictions_num[i]), additionals=[inputcomplaints[i]['body']])
+            train_x = get_x(VECTORIZED_SUB_TRAIN_CSV_PATH)
+            train_y = get_y(VECTORIZED_SUB_TRAIN_CSV_PATH)
+            test_x = get_x(VECTORIZED_SUB_TEST_CSV_PATH)
+            test_y = get_y(VECTORIZED_SUB_TEST_CSV_PATH)
+            test_id = get_id(VECTORIZED_SUB_TEST_CSV_PATH)
+            classifier = train_classifier(train_x, train_y)
 
-        # Feature extraction (needed in vectorization)
-        features = load_json(FEATURES_SUB_JSON_PATH)
-
-        # Vectorization
-        train_set, test_set = nb_vectorize(train_set, test_set, features, SUBCATEGORIES.keys())
-
-        # Put vectorized data in csv (sklearn reads from csv kasi)
-        write_csv(train_set, VECTORIZED_TRAIN_INPUT_CSV_PATH)
-        write_csv(test_set, VECTORIZED_TEST_INPUT_CSV_PATH)
-
-        # Get the vectorized data, to prepare it for classification:
-        df = pd.read_csv(VECTORIZED_TRAIN_INPUT_CSV_PATH)
-
-        X_train = np.array(df.drop(['category', 'id'], 1))
-        y_train = np.array(df['category'])
-
-        df = pd.read_csv(VECTORIZED_TEST_INPUT_CSV_PATH)
-
-        X_test = np.array(df.drop(['category', 'id'], 1))
-        y_test = np.array(df['category'])
-        test_id = np.array(df['id'])
-        classifier = train_classifier(X_train, y_train)
-
-
-        # Prepare output for template:
-
-        predict_list = X_test.reshape(len(X_test), -1)
-        category_list = y_test
-        predictions_subnum = classifier.predict(predict_list)
+            predict_list = test_x.reshape(len(test_x), -1)
+            predicts = classifier.predict(predict_list)
+            predictions_subnum.append(predicts[-1])
 
         for i in range(len(predictions_num)):
             context['prediction'].append({
                 'id': test_id[i],
                 'body': inputcomplaints[i]['body'],
                 'system_category': CATEGORIES[str(predictions_num[i])],
-                'system_subcategory': SUBCATEGORIES[str(predictions_subnum[i])]
+                'system_subcategory': SUBCATEGORIES[str(predictions_subnum[i])] if predictions_subnum[i] != 99 else ''
             })
 
         filepath = 'globals/static/report.csv'
