@@ -10,68 +10,9 @@ import csv
 from io import TextIOWrapper
 from categorizer.forms import *
 from categorizer.models import *
+from constants import *
 
-RAW_CSV_PATH = 'globals/data/raw.csv'
-RAW_TRAIN_JSON_PATH = 'globals/data/raw_train.json'
-RAW_DEVTEST_JSON_PATH = 'globals/data/raw_dev.json'
-RAW_EVALTEST_JSON_PATH = 'globals/data/raw_eval.json'
-RAW_SUB_TRAIN_JSON_PATH = 'globals/data/raw_sub_train.json'
-RAW_SUB_DEVTEST_JSON_PATH = 'globals/data/raw_sub_dev.json'
-RAW_SUB_EVALTEST_JSON_PATH = 'globals/data/raw_sub_eval.json'
-LOAD_PATH = 'globals/data/'
-VECTORIZED_TRAIN_CSV_PATH = 'globals/data/vectorized_train.csv'
-VECTORIZED_TEST_CSV_PATH = 'globals/data/vectorized_test.csv'
-VECTORIZED_SUB_TRAIN_CSV_PATH = 'globals/data/vectorized_sub_train.csv'
-VECTORIZED_SUB_TEST_CSV_PATH = 'globals/data/vectorized_sub_test.csv'
-VECTORIZED_TRAIN_INPUT_CSV_PATH = 'globals/data/vectorized_train_input.csv'
-VECTORIZED_TEST_INPUT_CSV_PATH = 'globals/data/vectorized_test_input.csv'
-PREPROCESSED_TRAIN_JSON_PATH = 'globals/data/preprocessed_train.json'
-PREPROCESSED_SUB_TEST_JSON_PATH = 'globals/data/preprocessed_test.json'
-PREPROCESSED_SUB_TRAIN_JSON_PATH = 'globals/data/preprocessed_sub_train.json'
-PREPROCESSED_TEST_JSON_PATH = 'globals/data/preprocessed_sub_test.json'
-FEATURES_JSON_PATH = 'globals/data/features.json'
-FEATURES_SUB_JSON_PATH = 'globals/data/features_sub.json'
-
-do_preprocessing = True
-
-CATEGORIES = {
-    '1': 'HR',
-    '4': 'ROADS',
-    '5': 'BRIDGES',
-    '6': 'FLOOD CONTROL',
-    '10': 'COMMENDATIONS'
-}
-
-SUBCATEGORIES = {
-    # '1': 'EMPLOYMENT',
-    '2': 'PAYMENT OF SALARIES',
-    '3': 'ALLEGATION OF MISBEHAVIOR/MALFEASANCE',
-    '5': 'CLAIMS OF BENEFITS',
-    '6': 'ALLEGATION OF DEFECTIVE ROAD CONSTRUCTION',
-    '7': 'ALLEGATION OF DELAYED ROAD CONSTRUCTION',
-    # '8': 'ROAD SAFETY',
-    # '9': 'ROAD SIGNS',
-    # '10': 'POOR ROAD CONDITION',
-    '11': 'REQUEST FOR FUNDING',
-    # '13': 'POOR BRIDGE CONDITION',
-    # '14': 'BRIDGE SAFETY',
-    '15': 'ALLEGATION OF DEFECTIVE BRIDGE CONSTRUCTION',
-    '16': 'ALLEGATION OF DELAYED BRIDGE CONSTRUCTION',
-    '21': 'CLOGGED DRAINAGE',
-    '22': 'DEFECTIVE FLOOD CONTROL CONSTRUCTION',
-    # '23': 'FLOOD CONTROL SAFETY',
-    '24': 'REQUEST FOR FUNDING',
-    '25': 'DELAYED FLOOD CONTROL CONSTRUCTION',
-    '26': 'APPLICATION',
-    '27': 'REQUEST FOR FUNDING'
-}
-
-CATEGORY_CHILDREN = {
-    '1': ['2', '3', '5', '26'],
-    '4': ['6', '7', '11'],
-    '5': ['15', '16', '27'],
-    '6': ['21', '22', '24', '25']
-}
+do_preprocessing = False
 
 
 def index(request):
@@ -128,11 +69,28 @@ def categorizer(request):
         predictions_num = classifier.predict(predict_list)
 
         category = CATEGORIES[str(predictions_num[-1])]
+        subcategory = ''
+
+        if category != 'COMMENDATIONS':
+            preprocess_subcategory(str(predictions_num[-1]), additionals=[complaintmessage])
+            # Get the vectorized data, to prepare it for classification:
+            train_x = get_x(VECTORIZED_SUB_TRAIN_CSV_PATH)
+            train_y = get_y(VECTORIZED_SUB_TRAIN_CSV_PATH)
+            test_x = get_x(VECTORIZED_SUB_TEST_CSV_PATH)
+            test_y = get_y(VECTORIZED_SUB_TEST_CSV_PATH)
+            test_id = get_id(VECTORIZED_SUB_TEST_CSV_PATH)
+            classifier = train_classifier(train_x, train_y)
+
+            predict_list = test_x.reshape(len(test_x), -1)
+            predictions_num = classifier.predict(predict_list)
+            subcategory = SUBCATEGORIES[str(predictions_num[-1])]
     else:
         complaint = ''
         category = ''
+        subcategory = ''
         
-    return render(request, 'categorizer.html', {'complaint': complaintmessage, 'category': category})
+    return render(request, 'categorizer.html', {'complaint': complaintmessage, 
+        'category': category, 'subcategory': subcategory})
 
 def multicategorizer(request):
     context = {
@@ -338,57 +296,7 @@ def subperformance(request):
         for category in ['1', '4', '5', '6']:
             if category == '10':
                 continue
-            if do_preprocessing:
-                raw_train_set = [
-                    c for c in load_json(RAW_SUB_TRAIN_JSON_PATH)
-                    if c['category'] in CATEGORY_CHILDREN[category]
-                ]
-                raw_test_set = [
-                    c for c in load_json(RAW_SUB_EVALTEST_JSON_PATH)
-                    if c['category'] in CATEGORY_CHILDREN[category]
-                ]
-
-                # Tokenization, Stopword Removal, and Stemming
-                train_set = preprocess_bulk(list(raw_train_set))
-                test_set = preprocess_bulk(list(raw_test_set))
-                write_json(train_set, PREPROCESSED_SUB_TRAIN_JSON_PATH)
-                write_json(test_set, PREPROCESSED_SUB_TEST_JSON_PATH)
-
-                # Feature extraction (needed in vectorization)
-                print(CATEGORIES[category])
-                features = extract_features(train_set, CATEGORY_CHILDREN[category])
-                if category == '1':
-                    features += [
-                        'salari', 'qualif', 'bachelor', 'resum', 'benefit', 'hire', 'hr', 'interview'
-                        'laud', 'cum', 'graduat', 'employ', 'payment', 'incent', 'delay', 'wage',
-                        'anomal', 'corrupt', 'bribe', 'abus', 'author', 'dalian', 'pay', 'oper',
-                        'univers', 'director', 'complaint'
-                    ]
-                elif category == '4':
-                    features += [
-                        'finish', 'slow', 'pace', 'long', 'forsaken', 'unfinish', 'still',
-                        'safeti', 'hasten', 'request', 'construct', 'limit', 'action', 'pend',
-                        'torment', 'year', 'danger', 'propos', 'contractor', 'poor', 'shoddi',
-                        'dark', 'go', 'repair', 'recent', 'sever', 'broken', 'problem', 'lack',
-                        'complet', 'almost', 'traffic', 'post', 'loss', 'useless', 'flood'
-                    ]
-                elif category == '5':
-                    features += [
-                        'updat', 'hazard', 'finish', 'durat', 'start', 'construct', 'without',
-                        'properti', 'statu', 'propos'
-                    ]
-                elif category == '6':
-                    features += [
-                        'shallow', 
-                    ]
-                write_json(features, FEATURES_SUB_JSON_PATH)
-
-                # Vectorization
-                train_set, test_set = nb_vectorize(train_set, test_set, features, CATEGORY_CHILDREN[category])
-
-                # Put vectorized data in csv (sklearn reads from csv kasi)
-                write_csv(train_set, VECTORIZED_SUB_TRAIN_CSV_PATH)
-                write_csv(test_set, VECTORIZED_SUB_TEST_CSV_PATH)
+            preprocess_subcategory(category)
 
             # Get the vectorized data, to prepare it for classification:
             train_x = get_x(VECTORIZED_SUB_TRAIN_CSV_PATH)
@@ -426,6 +334,15 @@ def subperformance(request):
                     bad_complaint['tokens'] = test_set[i]['body']
                     # bad_complaint['vector'] = list(predict_list[i])
                     bad_complaints.append(bad_complaint)
+
+            for i in range(len(predictions_num)):
+                correct = 'Yes' if predictions_num[i] == category_list[i] else 'No'
+                context['prediction'].append({
+                    'id': test_id[i],
+                    'system_category': SUBCATEGORIES[str(predictions_num[i])],
+                    'actual_category': SUBCATEGORIES[str(category_list[i])],
+                    'correct': correct
+                })
 
             # for f in features:
             #     print(f, end=', ')

@@ -4,6 +4,8 @@ import pandas as pd
 
 def get_x(csv_path):
     df = pd.read_csv(csv_path)
+    # print(df['category'][0])
+    # input()
     return np.array(df.drop(['category', 'id'], 1))
 
 def get_y(csv_path):
@@ -36,7 +38,6 @@ def get_scores(actual, predicted, category):
     FP = 0
     for i in irrelevant_indexes:
         if predicted[i] == category:
-            print('./.')
             FP += 1
 
     FN = 0
@@ -50,7 +51,8 @@ def get_scores(actual, predicted, category):
         precision = 0.0
     recall = TP / (TP + FN)
     try:
-        F = '{0:.4f}'.format((precision * recall) / (precision + recall))
+        # F = '{0:.4f}'.format((precision * recall) / (precision + recall))
+        F = '{0:.4f}'.format(2 * (precision * recall) / (precision + recall))
     except ZeroDivisionError:
         F = '0.0'
     precision = '{0:.4f}'.format(precision)

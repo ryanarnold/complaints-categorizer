@@ -9,6 +9,7 @@ import json
 from sklearn import preprocessing
 import csv
 import re
+from constants import *
 
 VECTORIZED_CSV_PATH = 'globals/data/vectorized.csv'
 
@@ -313,3 +314,64 @@ def find_complaint(complaint_id, complaints_list):
     for c in complaints_list:
         if c['id'] == complaint_id:
             return c
+
+def preprocess_subcategory(category, additionals=None):
+    raw_train_set = [
+        c for c in load_json(RAW_SUB_TRAIN_JSON_PATH)
+        if c['category'] in CATEGORY_CHILDREN[category]
+    ]
+    raw_test_set = [
+        c for c in load_json(RAW_SUB_EVALTEST_JSON_PATH)
+        if c['category'] in CATEGORY_CHILDREN[category]
+    ]
+
+    if additionals != None:          # para ito sa /categorizer at /multicategorizer
+        for a in additionals:
+            raw_test_set.append({
+                'id': 'CFMC-99999999',
+                'body': a,
+                'category': ''
+            })
+
+    # Tokenization, Stopword Removal, and Stemming
+    train_set = preprocess_bulk(list(raw_train_set))
+    test_set = preprocess_bulk(list(raw_test_set))
+    write_json(train_set, PREPROCESSED_SUB_TRAIN_JSON_PATH)
+    write_json(test_set, PREPROCESSED_SUB_TEST_JSON_PATH)
+
+    # Feature extraction (needed in vectorization)
+    print(CATEGORIES[category])
+    features = extract_features(train_set, CATEGORY_CHILDREN[category])
+    if category == '1':
+        features += [
+            'salari', 'qualif', 'bachelor', 'resum', 'benefit', 'hire', 'hr', 'interview'
+            'laud', 'cum', 'graduat', 'employ', 'payment', 'incent', 'delay', 'wage',
+            'anomal', 'corrupt', 'bribe', 'abus', 'author', 'dalian', 'pay', 'oper',
+            'univers', 'director', 'complaint'
+        ]
+    elif category == '4':
+        features += [
+            'finish', 'slow', 'pace', 'long', 'forsaken', 'unfinish', 'still',
+            'safeti', 'hasten', 'request', 'construct', 'limit', 'action', 'pend',
+            'torment', 'year', 'danger', 'propos', 'contractor', 'poor', 'shoddi',
+            'dark', 'go', 'repair', 'recent', 'sever', 'broken', 'problem', 'lack',
+            'complet', 'almost', 'traffic', 'post', 'loss', 'useless', 'flood',
+            'develop'
+        ]
+    elif category == '5':
+        features += [
+            'updat', 'hazard', 'finish', 'durat', 'start', 'construct', 'without',
+            'properti', 'statu', 'propos'
+        ]
+    elif category == '6':
+        features += [
+            'shallow', 
+        ]
+    write_json(features, FEATURES_SUB_JSON_PATH)
+
+    # Vectorization
+    train_set, test_set = nb_vectorize(train_set, test_set, features, CATEGORY_CHILDREN[category])
+
+    # Put vectorized data in csv (sklearn reads from csv kasi)
+    write_csv(train_set, VECTORIZED_SUB_TRAIN_CSV_PATH)
+    write_csv(test_set, VECTORIZED_SUB_TEST_CSV_PATH)
