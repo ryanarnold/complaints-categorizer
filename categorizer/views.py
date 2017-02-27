@@ -102,9 +102,9 @@ def multicategorizer(request):
     saved = False
     if request.method == 'POST':
         complaint = request.FILES['csvfile'].name
-        complaintpath = LOAD_PATH + complaint
+        complaintpath = LOAD_PATHmulti + complaint
         print (complaint)
-        print (LOAD_PATH)
+        print (LOAD_PATHmulti)
         print(complaint)
         print(complaintpath)
         inputcomplaints = load_multi(complaintpath)
@@ -112,7 +112,7 @@ def multicategorizer(request):
         # Tokenization, Stopword Removal, and Stemming
         train_set = load_json(RAW_TRAIN_JSON_PATH)
         train_set = preprocess_bulk(train_set)
-        print(inputcomplaints)
+        #print(inputcomplaints)
         test_set = preprocess_bulk(inputcomplaints)
 
         # Feature extraction (needed in vectorization)
@@ -164,6 +164,7 @@ def multicategorizer(request):
             predict_list = test_x.reshape(len(test_x), -1)
             predicts = classifier.predict(predict_list)
             predictions_subnum.append(predicts[-1])
+            test_id = get_id(VECTORIZED_TEST_INPUT_CSV_PATH)
 
         for i in range(len(predictions_num)):
             context['prediction'].append({
