@@ -197,6 +197,9 @@ def performance(request):
         'flood_scores': {'TP': '','TN': '','FP': '','FN': '','p':'','r':'','F':'','acc':''},
         'commend_scores': {'TP': '','TN': '','FP': '','FN': '','p':'','r':'','F':'','acc':''},
         'bridge_scores': {'TP': '','TN': '','FP': '','FN': '','p':'','r':'','F':'','acc':''},
+        'ave_p': 0.0,
+        'ave_r': 0.0,
+        'ave_f1': 0.0
     }
 
     if request.method == 'POST':
@@ -248,7 +251,10 @@ def performance(request):
         context['bridge_scores'] = get_scores(category_list, predictions_num, 5)
         context['flood_scores'] = get_scores(category_list, predictions_num, 6)
         context['commend_scores'] = get_scores(category_list, predictions_num, 10)
-        # context['accuracy'] = (context['hr_scores']['acc'] + context['road_scores']['acc'] + context['bridge_scores']['acc'] + context['flood_scores']['acc'] + context['commend_scores']['acc']) / 5
+        context['accuracy'] = '{0:0.4f}'.format((context['hr_scores']['acc'] + context['road_scores']['acc'] + context['bridge_scores']['acc'] + context['flood_scores']['acc'] + context['commend_scores']['acc']) / 5)
+        context['ave_p'] = '{0:0.4f}'.format((context['hr_scores']['p'] + context['road_scores']['p'] + context['bridge_scores']['p'] + context['flood_scores']['p'] + context['commend_scores']['p']) / 5)
+        context['ave_r'] = '{0:0.4f}'.format((context['hr_scores']['r'] + context['road_scores']['r'] + context['bridge_scores']['r'] + context['flood_scores']['r'] + context['commend_scores']['r']) / 5)
+        context['ave_f1'] = '{0:0.4f}'.format((context['hr_scores']['F'] + context['road_scores']['F'] + context['bridge_scores']['F'] + context['flood_scores']['F'] + context['commend_scores']['F']) / 5)
 
         for i in range(len(predictions_num)):
             correct = 'Yes' if predictions_num[i] == category_list[i] else 'No'

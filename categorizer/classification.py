@@ -52,11 +52,11 @@ def get_scores(actual, predicted, category):
     recall = TP / (TP + FN)
     try:
         # F = '{0:.4f}'.format((precision * recall) / (precision + recall))
-        F = '{0:.4f}'.format(2 * (precision * recall) / (precision + recall))
+        F = float('{0:.4f}'.format(2 * (precision * recall) / (precision + recall)))
     except ZeroDivisionError:
-        F = '0.0'
-    precision = '{0:.4f}'.format(precision)
-    recall = '{0:.4f}'.format(recall)
+        F = float('0.0')
+    precision = float('{0:.4f}'.format(precision))
+    recall = float('{0:.4f}'.format(recall))
     accuracy = float('{0:.4f}'.format((TP + TN) / len(actual)))
 
     return {'TP': TP, 'TN': TN, 'FP': FP, 'FN': FN, 'p': precision, 'r': recall, 'F': F, 'acc': accuracy}
