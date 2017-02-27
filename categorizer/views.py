@@ -11,6 +11,7 @@ from io import TextIOWrapper
 from categorizer.forms import *
 from categorizer.models import *
 from constants import *
+import resource
 
 do_preprocessing = False
 
@@ -101,6 +102,7 @@ def multicategorizer(request):
     complaintpath = ""
     saved = False
     if request.method == 'POST':
+        start = time.time()
         complaint = request.FILES['csvfile'].name
         complaintpath = LOAD_PATHmulti + complaint
         print (complaint)
@@ -185,6 +187,8 @@ def multicategorizer(request):
                 file.write(',')
                 file.write('"' + c['system_subcategory'] + '"')
                 file.write('\n')
+        print(time.time() - start)
+        print(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1000)
 
     return render(request, 'multicategorizer.html', context)
 
