@@ -168,7 +168,7 @@ def multicategorizer(request):
 
         for i in range(len(predictions_num)):
             context['prediction'].append({
-                'id': test_id[i],
+                'id': inputcomplaints[i]['id'],
                 'body': inputcomplaints[i]['body'],
                 'system_category': CATEGORIES[str(predictions_num[i])],
                 'system_subcategory': SUBCATEGORIES[str(predictions_subnum[i])] if predictions_subnum[i] != 99 else ''
@@ -262,7 +262,14 @@ def performance(request):
     return render(request, 'performance.html', context)
 
 def subperformance(request):
-    context = {'accuracy': {'1': 0.0, '4': 0.0, '5': 0.0, '6': 0.0}, 'prediction': [], 'ave_acc': 0.0}
+    context = {
+        'accuracy': {'1': 0.0, '4': 0.0, '5': 0.0, '6': 0.0},
+        'prediction': [],
+        'ave_p': {'1': 0.0, '4': 0.0, '5': 0.0, '6': 0.0},
+        'ave_r': {'1': 0.0, '4': 0.0, '5': 0.0, '6': 0.0},
+        'ave_f1': {'1': 0.0, '4': 0.0, '5': 0.0, '6': 0.0},
+        'ave_acc': 0.0
+    }
     context['categories'] = CATEGORIES
     context['subcategories'] = SUBCATEGORIES
     context['category_children'] = CATEGORY_CHILDREN
@@ -296,6 +303,13 @@ def subperformance(request):
 
             for s in CATEGORY_CHILDREN[category]:
                 context['scores'][s] = get_scores(category_list, predictions_num, int(s))
+                context['ave_p'][category] += float(context['scores'][s]['p'])
+                context['ave_r'][category] += float(context['scores'][s]['r'])
+                context['ave_f1'][category] += float(context['scores'][s]['F'])
+
+            context['ave_p'][category] = '{0:0.4f}'.format(context['ave_p'][category] / len(CATEGORY_CHILDREN[category]))
+            context['ave_r'][category] = '{0:0.4f}'.format(context['ave_r'][category] / len(CATEGORY_CHILDREN[category]))
+            context['ave_f1'][category] = '{0:0.4f}'.format(context['ave_f1'][category] / len(CATEGORY_CHILDREN[category]))
 
             raw_test_set = [
                 c for c in load_json(RAW_SUB_EVALTEST_JSON_PATH)

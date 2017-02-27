@@ -356,16 +356,17 @@ def preprocess_subcategory(category, additionals=None):
             'torment', 'year', 'danger', 'propos', 'contractor', 'poor', 'shoddi',
             'dark', 'go', 'repair', 'recent', 'sever', 'broken', 'problem', 'lack',
             'complet', 'almost', 'traffic', 'post', 'loss', 'useless', 'flood',
-            'develop'
+            'develop', 'highway',
         ]
     elif category == '5':
         features += [
             'updat', 'hazard', 'finish', 'durat', 'start', 'construct', 'without',
-            'properti', 'statu', 'propos'
+            'properti', 'statu', 'propos', 'still', 'attent', 'delay', 'sana', 'immedi',
+            'resum',
         ]
     elif category == '6':
         features += [
-            'shallow', 
+            'shallow', 'drainag', 'greas', 'clean', 'drainag', 'drainag', 'water', 'flood'
         ]
     write_json(features, FEATURES_SUB_JSON_PATH)
 
