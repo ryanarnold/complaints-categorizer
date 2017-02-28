@@ -162,9 +162,9 @@ def extract_features(complaints, categories):
         text += complaint['body']
     vocab = set(text)
     initial_features = DF(vocab, complaints)    # eliminates too infrequent terms
-    print(initial_features)
+    # print(initial_features)
     informative_features = chi_square(initial_features, complaints, categories)
-    print(informative_features)
+    # print(informative_features)
 
     return informative_features
 
@@ -214,6 +214,13 @@ def nb_vectorize(train_set, test_set, features, categories):
             C = entire_text.count(word) / len(entire_text)
             prob = (A * B) / C
             word_prob[word][category] = prob
+        if '6' in categories:
+            watch_words = features
+        else:
+            watch_words = []
+        if word in watch_words:
+            print(word, end='\n\t\t')
+            print(word_prob[word])
 
     vectorized_train_set = list()
 
@@ -347,7 +354,7 @@ def preprocess_subcategory(category, additionals=None):
             'salari', 'qualif', 'bachelor', 'resum', 'benefit', 'hire', 'hr', 'interview'
             'laud', 'cum', 'graduat', 'employ', 'payment', 'incent', 'delay', 'wage',
             'anomal', 'corrupt', 'bribe', 'abus', 'author', 'dalian', 'pay', 'oper',
-            'univers', 'director', 'complaint'
+            'univers', 'director', 'complaint', 'offer',
         ]
     elif category == '4':
         features += [
@@ -356,8 +363,16 @@ def preprocess_subcategory(category, additionals=None):
             'torment', 'year', 'danger', 'propos', 'contractor', 'poor', 'shoddi',
             'dark', 'go', 'repair', 'recent', 'sever', 'broken', 'problem', 'lack',
             'complet', 'almost', 'traffic', 'post', 'loss', 'useless', 'flood',
-            'develop', 'highway',
+            'develop', 'highway', 'slow'
         ]
+        features_to_remove = [
+            'email', 'mail', 'post', 'attent', 'im', 'p', 'villag', 'naga', 'bulacan',
+            'silang', 'ed', 'e', 'yan', 'assist', 'juan', 'god', 'children', 'within',
+            'nueva', 'rel', 'baguio', 'us', 'recent', 
+        ]
+        for r in features_to_remove:
+            features.remove(r)
+
     elif category == '5':
         features += [
             'updat', 'hazard', 'finish', 'durat', 'start', 'construct', 'without',
