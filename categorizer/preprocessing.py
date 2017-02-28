@@ -214,7 +214,7 @@ def nb_vectorize(train_set, test_set, features, categories):
             C = entire_text.count(word) / len(entire_text)
             prob = (A * B) / C
             word_prob[word][category] = prob
-        if '6' in categories:
+        if '16' in categories:
             watch_words = features
         else:
             watch_words = []
@@ -372,21 +372,49 @@ def preprocess_subcategory(category, additionals=None):
         ]
         for r in features_to_remove:
             features.remove(r)
-
     elif category == '5':
         features += [
             'updat', 'hazard', 'finish', 'durat', 'start', 'construct', 'without',
             'properti', 'statu', 'propos', 'still', 'attent', 'delay', 'sana', 'immedi',
-            'resum',
+            'resum', 'delay', 'unfinish'
         ]
+        features_to_remove = [
+            'resourc', 'seri', 'attach', 'therein', 'detail', 'letter', 'state', 'na', 'also',
+            'ay', 'contain', 'b', 'resolut', 'thank', 'without', 'statu', 'still', 'durat',
+            'finish', 'attent', 'start'
+        ]
+        for r in features_to_remove:
+            features.remove(r)
     elif category == '6':
         features += [
-            'shallow', 'drainag', 'greas', 'clean', 'drainag', 'drainag', 'water', 'flood'
+            'delay', 'complet', 'finish', 'unfinish', 'still', 'updat', 'now', 'until', 
         ]
     write_json(features, FEATURES_SUB_JSON_PATH)
 
     # Vectorization
     train_set, test_set = nb_vectorize(train_set, test_set, features, CATEGORY_CHILDREN[category])
+
+    if category == '5':
+        for i in train_set:
+            curr_highest = 0.0
+            for v in i['vector'].keys():
+                if i['vector'][v] > curr_highest:
+                    curr_highest = i['vector'][v]
+
+            if curr_highest == 0.0:
+                print(i['id'])
+
+    print('---')
+
+    if category == '5':
+        for i in test_set:
+            curr_highest = 0.0
+            for v in i['vector'].keys():
+                if i['vector'][v] > curr_highest:
+                    curr_highest = i['vector'][v]
+
+            if curr_highest == 0.0:
+                print(i['id'])
 
     # Put vectorized data in csv (sklearn reads from csv kasi)
     write_csv(train_set, VECTORIZED_SUB_TRAIN_CSV_PATH)
