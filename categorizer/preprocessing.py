@@ -10,6 +10,9 @@ from sklearn import preprocessing
 import csv
 import re
 from constants import *
+import nltk
+
+nltk.data.path.append('nltk_data')
 
 VECTORIZED_CSV_PATH = 'globals/data/vectorized.csv'
 
@@ -214,13 +217,13 @@ def nb_vectorize(train_set, test_set, features, categories):
             C = entire_text.count(word) / len(entire_text)
             prob = (A * B) / C
             word_prob[word][category] = prob
-        if '16' in categories:
-            watch_words = features
-        else:
-            watch_words = []
-        if word in watch_words:
-            print(word, end='\n\t\t')
-            print(word_prob[word])
+        # if '25' in categories:
+        #     watch_words = features
+        # else:
+        #     watch_words = []
+        # if word in watch_words:
+        #     print(word, end='\n\t\t')
+        #     print(word_prob[word])
 
     vectorized_train_set = list()
 
@@ -255,18 +258,18 @@ def nb_vectorize(train_set, test_set, features, categories):
                         n = 1
                         break
                     n += 1
-                    # if complaint['id'] == 'CFMC-20150223':
-                    #     print(category + ' : ' + word, end='              ')
-                    #     print('{0:.4f}'.format(word_prob[word][category]))
+                    if complaint['category'] == '25':
+                        print(category + ' : ' + word, end='              ')
+                        print('{0:.4f}'.format(word_prob[word][category]))
             try:
                 vector[category] = prob / n
             except ZeroDivisionError:
                 vector[category] = 0
 
         vectorized_test_set.append({'vector': vector, 'category': complaint['category'], 'id': complaint['id']})
-        # if complaint['id'] == 'CFMC-20150223':
-        #     print(vector)
-        #     input()
+        if complaint['category'] == '25':
+            print(vector)
+            input()
 
     return vectorized_train_set, vectorized_test_set
 
@@ -389,32 +392,16 @@ def preprocess_subcategory(category, additionals=None):
         features += [
             'delay', 'complet', 'finish', 'unfinish', 'still', 'updat', 'now', 'until', 
         ]
+        features_to_remove = [
+            "good","day","na","ed","din","mag","ay","us","ito","mani","thank","depart","public",
+        "work","highway","baka","lang","address",
+        ]
+        for r in features_to_remove:
+            features.remove(r)
     write_json(features, FEATURES_SUB_JSON_PATH)
 
     # Vectorization
     train_set, test_set = nb_vectorize(train_set, test_set, features, CATEGORY_CHILDREN[category])
-
-    if category == '5':
-        for i in train_set:
-            curr_highest = 0.0
-            for v in i['vector'].keys():
-                if i['vector'][v] > curr_highest:
-                    curr_highest = i['vector'][v]
-
-            if curr_highest == 0.0:
-                print(i['id'])
-
-    print('---')
-
-    if category == '5':
-        for i in test_set:
-            curr_highest = 0.0
-            for v in i['vector'].keys():
-                if i['vector'][v] > curr_highest:
-                    curr_highest = i['vector'][v]
-
-            if curr_highest == 0.0:
-                print(i['id'])
 
     # Put vectorized data in csv (sklearn reads from csv kasi)
     write_csv(train_set, VECTORIZED_SUB_TRAIN_CSV_PATH)
