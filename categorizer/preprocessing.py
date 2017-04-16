@@ -21,7 +21,7 @@ punctuations = ['.', ':', ',', ';', '\'', '``', '\'\'', '(', ')', '•', '%',
 punc = re.compile(r'[^a-zA-Z0-9]')
 
 # Stopwords corpus
-with open('globals/data/stopwords.json', 'r') as file:
+with open(BASE_DIRECTORY + 'globals/data/stopwords.json', 'r') as file:
     stopwords = set(json.load(file))
 
 # Vocabulary of all English words
@@ -156,7 +156,7 @@ def stem(text):
             #     print(token)
             #     stemmed.append(porter.stem(translated.lower()))
             pass
-    
+
     return stemmed
 
 def extract_features(complaints, categories):
@@ -175,7 +175,7 @@ def vectorize(train_set, test_set, features):
     vectorized_train_set = []
     for complaint in train_set:
         vector = {}
-        for term in features:    
+        for term in features:
             # TF = complaint['body'].count(term)
             # vector[term] = TFIDF(TF, complaints, term)
             vector[term] = complaint['body'].count(term)
@@ -184,7 +184,7 @@ def vectorize(train_set, test_set, features):
     vectorized_test_set = []
     for complaint in test_set:
         vector = {}
-        for term in features:    
+        for term in features:
             # TF = complaint['body'].count(term)
             # vector[term] = TFIDF(TF, complaints, term)
             vector[term] = complaint['body'].count(term)
@@ -232,7 +232,7 @@ def nb_vectorize(train_set, test_set, features, categories):
         vector = {}
 
         for category in categories:
-            prob = float()            
+            prob = float()
             for word in complaint['body']:
                 if word in features:
                     prob += word_prob[word][category]
@@ -249,7 +249,7 @@ def nb_vectorize(train_set, test_set, features, categories):
 
         for category in categories:
             n = 0
-            prob = float()            
+            prob = float()
             for word in complaint['body']:
                 if word in word_prob.keys():
                     prob += word_prob[word][category]
@@ -371,7 +371,7 @@ def preprocess_subcategory(category, additionals=None):
         features_to_remove = [
             'email', 'mail', 'post', 'attent', 'im', 'p', 'villag', 'naga', 'bulacan',
             'silang', 'ed', 'e', 'yan', 'assist', 'juan', 'god', 'children', 'within',
-            'nueva', 'rel', 'baguio', 'us', 'recent', 
+            'nueva', 'rel', 'baguio', 'us', 'recent',
         ]
         for r in features_to_remove:
             features.remove(r)
@@ -390,7 +390,7 @@ def preprocess_subcategory(category, additionals=None):
             features.remove(r)
     elif category == '6':
         features += [
-            'delay', 'complet', 'finish', 'unfinish', 'still', 'updat', 'now', 'until', 
+            'delay', 'complet', 'finish', 'unfinish', 'still', 'updat', 'now', 'until',
         ]
         features_to_remove = [
             "good","day","na","ed","din","mag","ay","us","ito","mani","thank","depart","public",

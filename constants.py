@@ -1,3 +1,4 @@
+BASE_DIRECTORY = '/home/ryanarnold/complaints_categorizer/'
 RAW_CSV_PATH = 'globals/data/raw.csv'
 RAW_TRAIN_JSON_PATH = 'globals/data/raw_train.json'
 RAW_DEVTEST_JSON_PATH = 'globals/data/raw_dev.json'
