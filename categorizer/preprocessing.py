@@ -27,22 +27,22 @@ with open(BASE_DIRECTORY + 'globals/data/stopwords.json', 'r') as file:
     stopwords = set(json.load(file))
 
 # Vocabulary of all English words
-with open('globals/data/english.json', 'r') as file:
+with open(BASE_DIRECTORY + 'globals/data/english.json', 'r') as file:
     english = set(json.load(file))
 
 # Vocabulary of all Tagalog words
-with open('globals/data/tagalog.json', 'r') as file:
+with open(BASE_DIRECTORY + 'globals/data/tagalog.json', 'r') as file:
     tagalog = set(json.load(file))
 
 # Stemmer
 porter = PorterStemmer()
 
 # Translation table
-with open('globals/data/translated.json') as translated_file:
+with open(BASE_DIRECTORY + 'globals/data/translated.json') as translated_file:
     trans = json.load(translated_file)
 
 # Road List
-with open('globals/data/roadlist.json') as f:
+with open(BASE_DIRECTORY + 'globals/data/roadlist.json') as f:
     roadlist = json.load(f)
 
 
