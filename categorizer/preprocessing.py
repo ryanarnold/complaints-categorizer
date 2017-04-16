@@ -23,26 +23,26 @@ punctuations = ['.', ':', ',', ';', '\'', '``', '\'\'', '(', ')', '•', '%',
 punc = re.compile(r'[^a-zA-Z0-9]')
 
 # Stopwords corpus
-with open(BASE_DIRECTORY + 'globals/data/stopwords.json', 'r') as file:
+with open('globals/data/stopwords.json', 'r') as file:
     stopwords = set(json.load(file))
 
 # Vocabulary of all English words
-with open(BASE_DIRECTORY + 'globals/data/english.json', 'r') as file:
+with open('globals/data/english.json', 'r') as file:
     english = set(json.load(file))
 
 # Vocabulary of all Tagalog words
-with open(BASE_DIRECTORY + 'globals/data/tagalog.json', 'r') as file:
+with open('globals/data/tagalog.json', 'r') as file:
     tagalog = set(json.load(file))
 
 # Stemmer
 porter = PorterStemmer()
 
 # Translation table
-with open(BASE_DIRECTORY + 'globals/data/translated.json') as translated_file:
+with open('globals/data/translated.json') as translated_file:
     trans = json.load(translated_file)
 
 # Road List
-with open(BASE_DIRECTORY + 'globals/data/roadlist.json') as f:
+with open('globals/data/roadlist.json') as f:
     roadlist = json.load(f)
 
 
