@@ -12,6 +12,8 @@ import re
 from constants import *
 import nltk
 
+BASE_DIRECTORY = '/home/ryanarnold/complaints_categorizer/'
+
 nltk.data.path.append('nltk_data')
 
 VECTORIZED_CSV_PATH = 'globals/data/vectorized.csv'
