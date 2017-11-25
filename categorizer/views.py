@@ -11,7 +11,7 @@ from io import TextIOWrapper
 from categorizer.forms import *
 from categorizer.models import *
 from constants import *
-import resource
+# import resource
 
 do_preprocessing = False
 
@@ -188,7 +188,7 @@ def multicategorizer(request):
                 file.write('"' + c['system_subcategory'] + '"')
                 file.write('\n')
         print(time.time() - start)
-        print(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1000)
+        # print(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1000)
 
     return render(request, 'multicategorizer.html', context)
 
